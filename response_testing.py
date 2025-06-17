@@ -53,22 +53,23 @@ async def return_video_data():
         return video_files
 
     @on_exception(expo, Exception, max_tries=5)
-
     async def get_video_properties(session, sem, title):
         params = {
             "action": "query",
             "titles": title,
             "prop": "videoinfo",
-            "viprop": "canonicaltitle|url|size|dimensions|duration",
+            "viprop": "canonicaltitle|url|size|dimensions|duration|thumb",
+            "viurlwidth": 320,  # Request 320px wide thumbnail
             "format": "json"
         }
-        
+
         async with sem:
             async with session.get(
                 "https://commons.wikimedia.org/w/api.php",
                 params=params
             ) as response:
                 return await response.json()
+
 
     async def final():
         sem = asyncio.Semaphore(20)  # Wikimedia API rate limit
@@ -80,9 +81,28 @@ async def return_video_data():
                     for item in video_files]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             
-            final_l=[]
-            for i in results:
-                final_l.append(i["query"])
+            final_l = []
+
+            for result in results:
+                try:
+                    # Get the first (and only) page object
+                    page_data = next(iter(result["query"]["pages"].values()))
+                    video_info = page_data.get("videoinfo", [{}])[0]
+
+                    # Flatten and enrich the info
+                    video_info["pageid"] = page_data.get("pageid")
+                    video_info["title"] = page_data.get("title")
+
+                    # Optional: fallback if thumburl isn't present
+                    if "thumburl" not in video_info:
+                        video_info["thumburl"] = None
+
+                    final_l.append(video_info)
+
+                except Exception as e:
+                    print(f"Error processing result: {e}")
+
             return final_l
+
 
     return await final()
