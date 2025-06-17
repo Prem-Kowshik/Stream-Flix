@@ -1,9 +1,12 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from datetime import timedelta
 import sys
 import os
 import asyncio
 import json
+import logging
+
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -29,7 +32,6 @@ async def get_trope_analysis(movie_title, description_url):
     try:
         return await character_tropes_generator(movie_title, description_url)
     except Exception as e:
-        # Return fallback analysis
         fallback_analysis = {
             "film_title": movie_title,
             "estimated_year": "Unknown",
@@ -48,11 +50,14 @@ async def get_trope_analysis(movie_title, description_url):
         }
         return json.dumps(fallback_analysis, indent=2)
 
-# Set up the page
+logging.basicConfig(level=logging.DEBUG)
+logging.debug("Page Icon Removed")
+
+title = "Video Player - Wikimedia Commons"
 st.set_page_config(
     page_title="Video Player - Wikimedia Commons",
     page_icon="🎬",
-    layout="wide",
+    layout="centered",
     initial_sidebar_state="collapsed"
 )
 
@@ -191,25 +196,37 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Check if video is selected
 if 'selected_video' not in st.session_state or not st.session_state.selected_video:
     st.error("No video selected. Please select a video from the browse page.")
-    if st.button("← Back to Browse"):
+    if st.button("Back to Browse"):
         st.switch_page("streamlit_frontend.py")
 else:
     video = st.session_state.selected_video
     movie_title = clean_title(video["canonicaltitle"])
-    
-    # Movie title
+
     st.markdown(f'<h1>{movie_title}</h1>', unsafe_allow_html=True)
-    
-    # Video player container
     st.markdown('<div class="video-player-container">', unsafe_allow_html=True)
-    
-    # Video player
-    st.video(video['url'])
-    
-    # Technical details
+
+    # Playback speed selector
+    speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
+
+
+    # Custom HTML5 video player with speed control
+    video_html = f"""
+    <video id=\"customVideo\" width=\"100%\" height=\"auto\" controls>
+      <source src=\"{video['url']}\" type=\"video/mp4\">
+      Your browser does not support the video tag.
+    </video>
+    <script>
+      var video = document.getElementById(\"customVideo\");
+      video.playbackRate = {speed};
+    </script>
+    """
+    components.html(video_html, height=400)
+
+    st.markdown("""</div>""", unsafe_allow_html=True)
+
+   # Technical details
     st.subheader("📊 Video Details")
     col1, col2, col3, col4 = st.columns(4)
     
