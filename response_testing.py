@@ -9,7 +9,7 @@ async def return_video_data():
             "list": "categorymembers",
             "cmtitle": title,
             "cmtype": "page|subcat|file",
-            "cmlimit": 50,
+            "cmlimit": 5,
             "format": "json"
         }
         
