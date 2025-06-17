@@ -684,57 +684,58 @@ async def main():
         # Display videos in a grid layout
         cols = st.columns(3)
         
-        for i, video in enumerate(videos):
-            col = cols[i % 3]
-            
-            with col:
-                st.markdown(f"""
-                <div class="video-card">
-                    <div class="video-thumbnail">
-                        🎬
+    for i, video in enumerate(videos):
+        col = cols[i % 3]
+    
+        with col:
+            st.markdown(f"""
+            <div class="video-card">
+                <div class="video-thumbnail">
+                    🎬
+                </div>
+                <div class="video-info">
+                    <h4 class="video-title">{clean_title(video['canonicaltitle'])}</h4>
+                    <div class="video-metadata">
+                        <div class="metadata-item">
+                            <span class="metadata-label">⏱️ Duration:</span>
+                            <span class="metadata-value">{format_duration(video['duration'])}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">📐 Resolution:</span>
+                            <span class="metadata-value">{video['width']}×{video['height']}</span>
+                        </div>
+                        <div class="metadata-item">
+                            <span class="metadata-label">📁 Size:</span>
+                            <span class="metadata-value">{format_size(video['size'])}</span>
+                        </div>
                     </div>
-                    <div class="video-info">
-                        <h4 class="video-title">{clean_title(video['canonicaltitle'])}</h4>
-                        <div class="video-metadata">
-                            <div class="metadata-item">
-                                <span class="metadata-label">⏱️ Duration:</span>
-                                <span class="metadata-value">{format_duration(video['duration'])}</span>
-                            </div>
-                            <div class="metadata-item">
-                                <span class="metadata-label">📐 Resolution:</span>
-                                <span class="metadata-value">{video['width']}×{video['height']}</span>
-                            </div>
-                            <div class="metadata-item">
-                                <span class="metadata-label">📁 Size:</span>
-                                <span class="metadata-value">{format_size(video['size'])}</span>
-                            </div>
-                        </div>
-                        <div class="button-container">
-                """, unsafe_allow_html=True)
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    if st.button("📋 Details", key=f"details-{video['pageid']}", type="primary"):
-                        st.session_state.selected_video = video
-                        st.switch_page("pages/02_Movie_Details.py")
-                with col2:
-                    if st.button("▶️ Watch", key=f"watch-{video['pageid']}", type="primary"):
-                        st.session_state.selected_video = video
-                        st.switch_page("pages/01_Video_Player.py")
-                
-                st.markdown("""
-                        </div>
+                    <div class="button-container">
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("📋 Details", key=f"details-{video['pageid']}-{i}", type="primary"):
+                    st.session_state.selected_video = video
+                    st.switch_page("pages/02_Movie_Details.py")
+            with col2:
+                if st.button("▶️ Watch", key=f"watch-{video['pageid']}-{i}", type="primary"):
+                    st.session_state.selected_video = video
+                    st.switch_page("pages/01_Video_Player.py")
+            
+            st.markdown("""
                     </div>
                 </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
 
-        # Load more button
-        if len(all_videos) > st.session_state.display_count:
-            st.markdown('<div class="load-more-container">', unsafe_allow_html=True)
-            if st.button("📥 Load More Videos", type="primary", key="load_more"):
-                st.session_state.display_count += 100
-                st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
+    # Load more button
+    if len(all_videos) > st.session_state.display_count:
+        st.markdown('<div class="load-more-container">', unsafe_allow_html=True)
+        unique_key = f"load_more_{st.session_state.display_count}"
+        if st.button("📥 Load More Videos", type="primary", key=unique_key):
+            st.session_state.display_count += 100
+            st.rerun()
+        st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.markdown("""
         <div class="stats-container">
@@ -742,6 +743,7 @@ async def main():
             <p>Try adjusting your search terms or wait for videos to load.</p>
         </div>
         """, unsafe_allow_html=True)
+
 
     # Footer
     st.markdown("""
