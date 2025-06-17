@@ -33,7 +33,7 @@ async def fetch_genre(title, url):
     asyncio.Semaphore(10)  # Limit concurrent requests
     client = genai.Client(api_key="AIzaSyC2bzsTTU5br0H-P-EQReLMHiOvLZLILW8")
     response = await client.aio.models.generate_content(
-        model="gemini-2.0-flash",
+        model="gemini-2.0-flash-lite",
         contents=f"""Find the genre of the movie with the title: {title}. The movie can be found at this URL: {url}
         Format the response as a JSON object with the following fields:
         {{
