@@ -1,3 +1,4 @@
+import nest_asyncio 
 import streamlit as st
 import streamlit.components.v1 as components
 from datetime import timedelta
@@ -5,7 +6,10 @@ import sys
 import os
 import asyncio
 import json
-import logging
+import whisper
+import tempfile
+import requests
+import urllib.parse # Required for creating the subtitle Data URI
 
 
 # Add the parent directory to the Python path
