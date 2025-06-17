@@ -17,6 +17,21 @@ async def main():
     )
 
     # Enhanced CSS with modern design elements
+
+    # .video-thumbnail::before {
+    #         content: '';
+    #         position: absolute;
+    #         top: 50%;
+    #         left: 50%;
+    #         width: 100px;
+    #         height: 100px;
+    #         background: var(--primary-red);
+    #         border-radius: 50%;
+    #         transform: translate(-50%, -50%);
+    #         opacity: 0.1;
+    #         animation: ripple 2s infinite;
+    #     }
+    
     st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -169,17 +184,7 @@ async def main():
         }
         
         .video-thumbnail::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 100px;
-            height: 100px;
-            background: var(--primary-red);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            opacity: 0.1;
-            animation: ripple 2s infinite;
+            display: none;
         }
         
         @keyframes ripple {
@@ -491,67 +496,44 @@ async def main():
 
     # Mock data fallback when API is not available
     MOCK_DATA = [
-        {
-            'pages': {
-                '12345': {
-                    'pageid': 12345,
-                    'ns': 6,
-                    'title': 'File:Charlie Chaplin The Gold Rush.webm',
-                    'imagerepository': 'local',
-                    'videoinfo': [{
-                        'size': 25600000,
-                        'width': 1280,
-                        'height': 720,
-                        'duration': 5100.5,
-                        'canonicaltitle': 'File:Charlie Chaplin The Gold Rush.webm',
-                        'url': 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Charlie_Chaplin_The_Gold_Rush.webm',
-                        'descriptionurl': 'https://commons.wikimedia.org/wiki/File:Charlie_Chaplin_The_Gold_Rush.webm',
-                        'descriptionshorturl': 'https://commons.wikimedia.org/w/index.php?curid=12345'
-                    }]
-                }
-            }
-        },
-        {
-            'pages': {
-                '67890': {
-                    'pageid': 67890,
-                    'ns': 6,
-                    'title': 'File:Nosferatu (1922).webm',
-                    'imagerepository': 'local',
-                    'videoinfo': [{
-                        'size': 30720000,
-                        'width': 1280,
-                        'height': 720,
-                        'duration': 5400.0,
-                        'canonicaltitle': 'File:Nosferatu (1922).webm',
-                        'url': 'https://upload.wikimedia.org/wikipedia/commons/5/51/Nosferatu_%281922%29.webm',
-                        'descriptionurl': 'https://commons.wikimedia.org/wiki/File:Nosferatu_(1922).webm',
-                        'descriptionshorturl': 'https://commons.wikimedia.org/w/index.php?curid=67890'
-                    }]
-                }
-            }
-        },
-        {
-            'pages': {
-                '13579': {
-                    'pageid': 13579,
-                    'ns': 6,
-                    'title': 'File:The Cabinet of Dr. Caligari (1920).ogv',
-                    'imagerepository': 'local',
-                    'videoinfo': [{
-                        'size': 28000000,
-                        'width': 1280,
-                        'height': 720,
-                        'duration': 4500.0,
-                        'canonicaltitle': 'File:The Cabinet of Dr. Caligari (1920).ogv',
-                        'url': 'https://upload.wikimedia.org/wikipedia/commons/c/c3/The_Cabinet_of_Dr._Caligari_%281920%29.ogv',
-                        'descriptionurl': 'https://commons.wikimedia.org/wiki/File:The_Cabinet_of_Dr._Caligari_(1920).ogv',
-                        'descriptionshorturl': 'https://commons.wikimedia.org/w/index.php?curid=13579'
-                    }]
-                }
-            }
-        }
-    ]
+    {
+        'pageid': 12345,
+        'title': 'File:Charlie Chaplin The Gold Rush.webm',
+        'canonicaltitle': 'File:Charlie Chaplin The Gold Rush.webm',
+        'url': 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Charlie_Chaplin_The_Gold_Rush.webm',
+        'descriptionurl': 'https://commons.wikimedia.org/wiki/File:Charlie_Chaplin_The_Gold_Rush.webm',
+        'width': 1280,
+        'height': 720,
+        'duration': 5100.5,
+        'size': 25600000,
+        'thumburl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Charlie_Chaplin_The_Gold_Rush.webm/320px--Charlie_Chaplin_The_Gold_Rush.webm.jpg'
+    },
+    {
+        'pageid': 67890,
+        'title': 'File:Nosferatu (1922).webm',
+        'canonicaltitle': 'File:Nosferatu (1922).webm',
+        'url': 'https://upload.wikimedia.org/wikipedia/commons/5/51/Nosferatu_%281922%29.webm',
+        'descriptionurl': 'https://commons.wikimedia.org/wiki/File:Nosferatu_(1922).webm',
+        'width': 1280,
+        'height': 720,
+        'duration': 5400.0,
+        'size': 30720000,
+        'thumburl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Nosferatu_%281922%29.webm/320px--Nosferatu_%281922%29.webm.jpg'
+    },
+    {
+        'pageid': 13579,
+        'title': 'File:The Cabinet of Dr. Caligari (1920).ogv',
+        'canonicaltitle': 'File:The Cabinet of Dr. Caligari (1920).ogv',
+        'url': 'https://upload.wikimedia.org/wikipedia/commons/c/c3/The_Cabinet_of_Dr._Caligari_%281920%29.ogv',
+        'descriptionurl': 'https://commons.wikimedia.org/wiki/File:The_Cabinet_of_Dr._Caligari_(1920).ogv',
+        'width': 1280,
+        'height': 720,
+        'duration': 4500.0,
+        'size': 28000000,
+        'thumburl': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/The_Cabinet_of_Dr._Caligari_%281920%29.ogv/320px--The_Cabinet_of_Dr._Caligari_%281920%29.ogv.jpg'
+    }
+]
+
 
     # Function to simulate return_video_data() for testing
     async def get_video_data_from_function():
@@ -561,7 +543,26 @@ async def main():
                 return await return_video_data()
         except Exception as e:
             st.error(f"Error fetching video data: {e}")
-            return MOCK_DATA
+
+            fallback = []
+            for item in MOCK_DATA:
+                for page in item.get('pages', {}).values():
+                    info = page.get('videoinfo', [{}])[0]
+                    fallback.append({
+                        'pageid': page.get('pageid'),
+                        'title': page.get('title'),
+                        'canonicaltitle': info.get('canonicaltitle'),
+                        'url': info.get('url'),
+                        'descriptionurl': info.get('descriptionurl'),
+                        'width': info.get('width'),
+                        'height': info.get('height'),
+                        'duration': info.get('duration', 0),
+                        'size': info.get('size'),
+                        'thumburl': info.get('thumburl', None)
+                    })
+
+            print("Fallback data used:", len(fallback), "videos")
+            return fallback  # <- MAKE SURE THIS IS RETURNED
 
     # Function to format duration
     def format_duration(seconds):
@@ -586,31 +587,17 @@ async def main():
         """Get videos directly from function"""
         raw_data = await get_video_data_from_function()
         processed_videos = []
-        
-        for item in raw_data:
-            for page_id, page_data in item['pages'].items():
-                if 'videoinfo' in page_data and page_data['videoinfo']:
-                    video_info = page_data['videoinfo'][0]
-                    video = {
-                        'pageid': page_data['pageid'],
-                        'title': page_data['title'],
-                        'canonicaltitle': video_info['canonicaltitle'],
-                        'url': video_info['url'],
-                        'descriptionurl': video_info['descriptionurl'],
-                        'width': video_info['width'],
-                        'height': video_info['height'],
-                        'duration': video_info.get('duration', 0),
-                        'size': video_info['size']
-                    }
-                    
-                    # Apply search filter if provided
-                    if search_term:
-                        if search_term.lower() in video['canonicaltitle'].lower():
-                            processed_videos.append(video)
-                    else:
+
+        for video in raw_data:
+            if 'canonicaltitle' in video and 'url' in video:
+                if search_term:
+                    if search_term.lower() in video['canonicaltitle'].lower():
                         processed_videos.append(video)
-        
+                else:
+                    processed_videos.append(video)
+
         return processed_videos
+
 
     # Initialize session state
     if 'selected_video' not in st.session_state:
@@ -681,17 +668,17 @@ async def main():
         </div>
         """, unsafe_allow_html=True)
         
-        # Display videos in a grid layout
+        # Display videos in a grid layout 🎬
         cols = st.columns(3)
         
     for i, video in enumerate(videos):
         col = cols[i % 3]
-    
+
         with col:
             st.markdown(f"""
             <div class="video-card">
                 <div class="video-thumbnail">
-                    🎬
+                    <img src="{video.get('thumburl') or 'https://pin.it/6OUANYdb1'}" alt="Thumbnail" style="width:100%; height:100%; object-fit:cover; border-radius: 20px 20px 0 0;" />
                 </div>
                 <div class="video-info">
                     <h4 class="video-title">{clean_title(video['canonicaltitle'])}</h4>
@@ -711,7 +698,7 @@ async def main():
                     </div>
                     <div class="button-container">
             """, unsafe_allow_html=True)
-            
+
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("📋 Details", key=f"details-{video['pageid']}-{i}", type="primary"):
@@ -721,13 +708,13 @@ async def main():
                 if st.button("▶️ Watch", key=f"watch-{video['pageid']}-{i}", type="primary"):
                     st.session_state.selected_video = video
                     st.switch_page("pages/01_Video_Player.py")
-            
+
             st.markdown("""
                     </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
-
+            
     # Load more button
     if len(all_videos) > st.session_state.display_count:
         st.markdown('<div class="load-more-container">', unsafe_allow_html=True)
