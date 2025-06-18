@@ -455,6 +455,130 @@ async def main():
             }
         }
         
+                /* Enhanced search button */
+        .stButton > button[data-testid="baseButton-primary"] {
+            width: 100%;
+            height: 40px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Carousel container */
+        .carousel-container {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(220,38,38,0.3);
+            margin-bottom: 2rem;
+        }
+        
+        .carousel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.6);
+            border-radius: 20px;
+            transition: all 0.5s ease;
+        }
+        
+        .carousel-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            display: flex;
+            align-items: flex-end;
+            padding: 20px;
+        }
+        
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(220,38,38,0.5);
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.2rem;
+        }
+        
+        .carousel-nav:hover {
+            background: rgba(220,38,38,0.7);
+            border-color: var(--primary-red);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .carousel-nav.prev {
+            left: 20px;
+        }
+        
+        .carousel-nav.next {
+            right: 20px;
+        }
+        
+        .carousel-indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .carousel-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .carousel-dot.active {
+            background: var(--primary-red);
+            transform: scale(1.2);
+        }
+        
+        /* Video grid scrolling */
+        .video-grid {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding-right: 10px;
+            scroll-behavior: smooth;
+        }
+        
+        .video-grid::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .video-grid::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+            border-radius: 4px;
+        }
+        
+        .video-grid::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 4px;
+        }
+        
+        .video-grid::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-red-light);
+        }
+        
         /* Loading animation */
         .loading-spinner {
             display: inline-block;
@@ -607,29 +731,29 @@ async def main():
     if 'all_videos' not in st.session_state:
         st.session_state.all_videos = []
 
-    # Hero Section
-    st.markdown("""
-    <div class="hero-section">
-        <h1 class="hero-title">🎬 StreamFlix</h1>
-        <p class="hero-subtitle">Discover and explore classic films from Wikimedia Commons</p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Top Navigation Bar (left: title, right: search)
+    top_col1, top_col2 = st.columns([1, 2])
+    with top_col1:
+        st.markdown("""
+        <h1 style='margin-top: 0; color: var(--primary-red); text-shadow: 0 0 10px var(--shadow-red);'>
+            🎬 StreamFlix
+        </h1>
+        """, unsafe_allow_html=True)
 
-    # Search container
-    with st.container():
-        st.markdown('<div class="search-container">', unsafe_allow_html=True)
-        st.markdown("### 🔍 Search Movies")
-        
-        col1, col2 = st.columns([4, 1])
-        
-        with col1:
-            search_term = st.text_input("", placeholder="Search for classic films, actors, or directors...", label_visibility="collapsed")
-        
-        with col2:
-            st.write("")  # Spacing
-            search_button = st.button("🔍 Search", type="primary")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    with top_col2:
+        st.markdown("""
+        <div style='display: flex; align-items: center; gap: 10px; justify-content: flex-end;'>
+        """, unsafe_allow_html=True)
+
+        search_col1, search_col2 = st.columns([4, 1])
+        with search_col1:
+            search_term = st.text_input("Search", placeholder="Search movies...", label_visibility="collapsed", key="main_search")
+        with search_col2:
+            search_button = st.button("🔍", key="main_search_btn", help="Search videos")
+
+        st.markdown("</div>", unsafe_allow_html=True)
+
+
 
     # Get videos based on search or load initial data
     if search_button or search_term or not st.session_state.all_videos:
@@ -638,6 +762,36 @@ async def main():
         st.session_state.display_count = 100
     else:
         all_videos = st.session_state.all_videos
+
+    # Carousel of 5 featured videos
+    import random
+
+    if 'carousel_index' not in st.session_state:
+        st.session_state.carousel_index = 0
+
+    carousel_videos = random.sample(all_videos or MOCK_DATA, min(len(all_videos or MOCK_DATA), 5))
+    carousel_index = st.session_state.carousel_index
+    video = carousel_videos[carousel_index]
+
+    st.markdown(f"""
+    <div style='position: relative; height: 500px; overflow: hidden; border-radius: 20px; box-shadow: 0 10px 30px rgba(220,38,38,0.3); margin-bottom: 2rem;'>
+        <img src="{video.get('thumburl', '')}" style="width:100%; height: 100%; object-fit:cover; filter:brightness(0.6); border-radius: 20px;" />
+        <div style='position: absolute; bottom: 20px; left: 20px; color: white;'>
+            <h2 style='margin:0; font-size: 2.5rem;'>{clean_title(video['title'])}</h2>
+            <p style='margin-top: 0.5rem;'>⏱ {format_duration(video['duration'])} • 📁 {format_size(video['size'])}</p>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    carousel_col1, carousel_col2 = st.columns([1, 1])
+    with carousel_col1:
+        if st.button("⬅️", key="prev_slide"):
+            st.session_state.carousel_index = (carousel_index - 1) % len(carousel_videos)
+            st.rerun()
+    with carousel_col2:
+        if st.button("➡️", key="next_slide"):
+            st.session_state.carousel_index = (carousel_index + 1) % len(carousel_videos)
+            st.rerun()
 
     # Get the current batch of videos to display
     videos = all_videos[:st.session_state.display_count]
