@@ -311,51 +311,19 @@ else:
                 st.error(f"❌ Error during analysis: {str(e)}"); st.session_state[analysis_key] = None
     
     # Display analysis if available
-    if st.session_state[f'analysis_{video["pageid"]}']:
+    if st.session_state[analysis_key]:
         try:
-            trope_data = json.loads(st.session_state[f'analysis_{video["pageid"]}'])
-            
-            # Display movie metadata
-            st.markdown("### 📋 Movie Information")
-            st.markdown(f"""
-            **Film Title:** {trope_data['film_title']}  
-            **Estimated Year:** {trope_data['estimated_year']}  
-            **Genre:** {trope_data['estimated_genre']}  
-            **Plot Available:** {'Yes' if trope_data['plot_available'] else 'No'}
-            """)
-            
-            # Display tropes
-            st.subheader("🎭 Character Tropes")
-            for trope in trope_data['tropes_identified']:
-                st.markdown(f"""
-                <div class="trope-card">
-                    <h4>{trope['trope_name']}</h4>
-                    <p><strong>Description:</strong> {trope['description']}</p>
-                    <p><strong>Confidence Score:</strong> {trope['confidence_score']}/10</p>
-                    <p><strong>Evidence:</strong> {trope['evidence']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Display thematic elements
-            st.subheader("🎨 Thematic Elements")
-            theme_tags = " • ".join(trope_data['thematic_elements'])
-            st.markdown(f"**Themes:** {theme_tags}")
-            
-            # Display analysis summary
-            st.subheader("📝 Analysis Summary")
-            st.write(trope_data['analysis_summary'])
-            
-        except json.JSONDecodeError as e:
-            st.markdown('<div class="error-message">❌ Error parsing analysis data. Please try running the analysis again.</div>', 
-                      unsafe_allow_html=True)
-        except KeyError as e:
-            st.markdown('<div class="error-message">❌ Incomplete analysis data received. Please try again.</div>', 
-                      unsafe_allow_html=True)
-    else:
-        st.info("Click the 'Analyze Movie Tropes' button above to get AI-powered insights about this film's characters, themes, and storytelling elements.")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
+            trope_data = json.loads(st.session_state[analysis_key])
+            st.markdown("<h3>📋 Movie Information</h3>", unsafe_allow_html=True); st.markdown(f"**Film Title:** {trope_data['film_title']}  \n**Estimated Year:** {trope_data['estimated_year']}  \n**Genre:** {trope_data['estimated_genre']}  \n**Plot Available:** {'Yes' if trope_data['plot_available'] else 'No'}")
+            st.markdown("<h3>🎭 Character Tropes</h3>", unsafe_allow_html=True)
+            for trope in trope_data['tropes_identified']: st.markdown(f'<div class="trope-card"><h4>{trope["trope_name"]}</h4><p><strong>Description:</strong> {trope["description"]}<br><strong>Confidence:</strong> {trope["confidence_score"]}/10 | <strong>Evidence:</strong> {trope["evidence"]}</p></div>', unsafe_allow_html=True)
+            st.markdown("<h3>🎨 Thematic Elements</h3>", unsafe_allow_html=True); st.markdown(" • ".join([f"`{theme}`" for theme in trope_data['thematic_elements']]))
+            st.markdown("<h3>📝 Analysis Summary</h3>", unsafe_allow_html=True); st.write(trope_data['analysis_summary'])
+        except Exception as e:
+            st.error(f"Error displaying analysis: {str(e)}"); st.code(st.session_state[analysis_key], language='json')
+    else: 
+        st.info("Click the 'Analyze Movie Tropes' button above to get AI-powered insights.")
+        
     # Additional information
     st.subheader("📄 Additional Information")
     st.write(f"**Original Title:** {video['title']}")
