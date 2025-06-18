@@ -3,11 +3,178 @@ import asyncio
 import sys
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+import hashlib
+import pickle
+import pickle
+from typing import Dict, Any, Optional, List
+from functools import wraps
+import logging as logger
+import time
+
 
 # Add the parent directory to the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from genre_utils import main as get_genre_data
+
+
+class CacheManager:
+    """Advanced cache manager with multiple caching strategies"""
+    
+    def __init__(self):
+        self.cache_dir = "cache_data"
+        if not os.path.exists(self.cache_dir):
+            os.makedirs(self.cache_dir)
+    
+    def _generate_cache_key(self, func_name: str, *args, **kwargs) -> str:
+        """Generate a unique cache key based on function name and parameters"""
+        # Create a string representation of args and kwargs
+        key_data = {
+            'func': func_name,
+            'args': str(args),
+            'kwargs': str(sorted(kwargs.items()))
+        }
+        key_string = json.dumps(key_data, sort_keys=True)
+        return hashlib.md5(key_string.encode()).hexdigest()
+    
+    def save_to_disk(self, key: str, data: Any, ttl_hours: int = 24) -> None:
+        """Save data to disk with TTL"""
+        try:
+            cache_file = os.path.join(self.cache_dir, f"{key}.pkl")
+            expiry_time = datetime.now() + timedelta(hours=ttl_hours)
+            
+            cache_data = {
+                'data': data,
+                'expiry': expiry_time,
+                'created': datetime.now()
+            }
+            with open(cache_file, 'wb') as f:
+                pickle.dump(cache_data, f)
+            
+            logger.info(f"Data cached to disk with key: {key}")
+        except Exception as e:
+            logger.error(f"Failed to save cache to disk: {e}")
+    
+    def load_from_disk(self, key: str) -> Optional[Any]:
+        """Load data from disk if not expired"""
+        try:
+            cache_file = os.path.join(self.cache_dir, f"{key}.pkl")
+            
+            if not os.path.exists(cache_file):
+                return None
+            
+            with open(cache_file, 'rb') as f:
+                cache_data = pickle.load(f)
+            
+            if datetime.now() > cache_data['expiry']:
+                os.remove(cache_file)
+                logger.info(f"Cache expired and removed: {key}")
+                return None
+            
+            logger.info(f"Cache hit from disk: {key}")
+            return cache_data['data']
+            
+        except Exception as e:
+            logger.error(f"Failed to load cache from disk: {e}")
+            return None
+    def clear_disk_cache(self) -> int:
+        """Clear all disk cache and return number of files removed"""
+        try:
+            files_removed = 0
+            for filename in os.listdir(self.cache_dir):
+                if filename.endswith('.pkl'):
+                    os.remove(os.path.join(self.cache_dir, filename))
+                    files_removed += 1
+            
+            logger.info(f"Cleared {files_removed} cache files from disk")
+            return files_removed
+        except Exception as e:
+            logger.error(f"Failed to clear disk cache: {e}")
+            return 0
+
+# Global cache manager instance
+cache_manager = CacheManager()
+
+
+#CACHING
+def async_cache_with_session_state(ttl_minutes: int = 30):
+    """
+    Custom decorator for caching async functions with session state
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Generate cache key
+            cache_key = cache_manager._generate_cache_key(func.__name__, *args, **kwargs)
+            session_cache_key = f"cache_{func.__name__}_{cache_key}"
+            
+            # Check session state cache first
+            if session_cache_key in st.session_state:
+                cached_data = st.session_state[session_cache_key]
+                cache_time = cached_data.get('timestamp', 0)
+                ttl_seconds = ttl_minutes * 60
+                
+                if time.time() - cache_time < ttl_seconds:
+                    logger.info(f"Session state cache hit: {func.__name__}")
+                    return cached_data['data']
+            
+            # Check disk cache
+            disk_data = cache_manager.load_from_disk(cache_key)
+            if disk_data is not None:
+                # Store in session state for faster access
+                st.session_state[session_cache_key] = {
+                    'data': disk_data,
+                    'timestamp': time.time()
+                }
+                return disk_data
+            
+            # Execute function and cache result
+            logger.info(f"Cache miss, executing function: {func.__name__}")
+            result = await func(*args, **kwargs)
+            # Store in both session state and disk
+            cache_data = {
+                'data': result,
+                'timestamp': time.time()
+            }
+            st.session_state[session_cache_key] = cache_data
+            cache_manager.save_to_disk(cache_key, result, ttl_hours=24)
+            
+            return result
+        
+        return wrapper
+    return decorator
+
+@async_cache_with_session_state(ttl_minutes=60)  # 1 hour cache
+async def load_genre_data_cached():
+    """
+    Cached version of genre data loading with comprehensive error handling
+    """
+    try:
+        with st.spinner("🎬 Loading and classifying movies by genre..."):
+            # Add progress tracking
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            status_text.text("Fetching video data from Wikimedia Commons...")
+            progress_bar.progress(25)
+            
+            # Call the actual genre classification function
+            genre_data = await get_genre_data()
+            progress_bar.progress(75)
+            
+            status_text.text("Processing classification results...")
+            progress_bar.progress(100)
+            
+            # Clear progress indicators
+            progress_bar.empty()
+            status_text.empty()
+            
+            return genre_data
+            
+    except Exception as e:
+        logger.error(f"Error in load_genre_data_cached: {e}")
+        st.error(f"Failed to load genre data: {str(e)}")
+        return {}
 
 # Set up the page
 st.set_page_config(
@@ -229,11 +396,19 @@ if st.button("🔄 Load Genre Data") or st.session_state.genre_data:
         with st.spinner("🎬 Classifying movies by genre using AI. This may take a few minutes..."):
             try:
                 # Call the main function from genre_utils.py to get genre data
-                genre_data = asyncio.run(get_genre_data())
+                genre_data = asyncio.run(load_genre_data_cached())
                 st.session_state.genre_data = genre_data
                 st.success("✅ Genre classification completed successfully!")
+                if genre_data:
+                    st.success("✅ Genre classification completed successfully!")
+                    st.balloons()
+                else:
+                    st.warning("⚠️ No data was loaded. Please check the genre_utils.py file.")
+                    
             except Exception as e:
-                st.error(f"❌ Error classifying genres: {str(e)}")
+                logger.error(f"Error loading genre data: {e}")
+                st.error(f"❌ Failed to load genre data: {str(e)}")
+            
     
     # If we have genre data, display it
     if st.session_state.genre_data:
@@ -302,7 +477,7 @@ if st.button("🔄 Load Genre Data") or st.session_state.genre_data:
         # Add a button to clear and refresh the data
         if st.button("🔄 Refresh Genre Data"):
             st.session_state.genre_data = None
-            st.experimental_rerun()
+            st.rerun()
             
     else:
         st.info("Click the 'Load Genre Data' button to classify movies by genre using AI.")
