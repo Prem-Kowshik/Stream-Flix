@@ -226,6 +226,13 @@ else:
     # Playback speed selector
     speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
 
+    subtitle_track = ""
+    if st.session_state[subtitle_key]:
+        vtt_subs = convert_srt_to_vtt(st.session_state[subtitle_key])
+        # Create a Data URI for the subtitles to embed them directly in the HTML
+        b64_subs = urllib.parse.quote(vtt_subs)
+        subtitle_uri = f"data:text/vtt;charset=utf-8,{b64_subs}"
+        subtitle_track = f'<track label="English" kind="subtitles" srclang="en" src="{subtitle_uri}" default>'
 
     # Custom HTML5 video player with speed control
     video_html = f"""
