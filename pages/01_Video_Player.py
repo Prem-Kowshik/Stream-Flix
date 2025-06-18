@@ -34,6 +34,32 @@ def clean_title(title):
     clean = clean.rsplit('.', 1)[0]
     return clean
 
+def format_timestamp(seconds):
+    h = int(seconds // 3600); m = int((seconds % 3600) // 60); s = int(seconds % 60)
+    ms = int((seconds - int(seconds)) * 1000)
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+def convert_srt_to_vtt(srt_content):
+    vtt_content = srt_content.replace(',', '.')
+    return "WEBVTT\n\n" + vtt_content
+
+def generate_english_subtitles(video_url):
+    model = whisper.load_model("base")
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_video:
+            tmp_path = tmp_video.name
+            headers = {"User-Agent": "Mozilla/5.0"}
+            video_bytes = requests.get(video_url, headers=headers).content
+            tmp_video.write(video_bytes)
+        result = model.transcribe(tmp_path, task='translate')
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+    detected_language = result.get('language', 'unknown')
+    subtitles = [f"{i+1}\n{format_timestamp(s['start'])} --> {format_timestamp(s['end'])}\n{s['text'].strip()}\n" for i, s in enumerate(result['segments'])]
+    return "\n".join(subtitles), detected_language
+
 async def get_trope_analysis(movie_title, description_url):
     """Async wrapper for trope analysis"""
     try:
