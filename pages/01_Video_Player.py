@@ -323,21 +323,14 @@ else:
             st.error(f"Error displaying analysis: {str(e)}"); st.code(st.session_state[analysis_key], language='json')
     else: 
         st.info("Click the 'Analyze Movie Tropes' button above to get AI-powered insights.")
-        
-    # Additional information
-    st.subheader("📄 Additional Information")
-    st.write(f"**Original Title:** {video['title']}")
-    st.write(f"**Canonical Title:** {video['canonicaltitle']}")
-    
+
     # Links
+    st.markdown("---")
     st.subheader("🔗 External Links")
     col_link1, col_link2 = st.columns(2)
-    with col_link1:
-        st.markdown(f"[📚 View on Wikimedia Commons]({video['descriptionurl']})")
-    with col_link2:
-        st.markdown(f"[🎬 Direct Video URL]({video['url']})")
+    with col_link1: st.markdown(f'<a href="{video["descriptionurl"]}" target="_blank" style="display: block; width: 100%; text-align: center; padding: 0.75rem 1rem; background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: bold;">📚 View on Wikimedia Commons</a>', unsafe_allow_html=True)
+    with col_link2: st.markdown(f'<a href="{video["url"]}" target="_blank" style="display: block; width: 100%; text-align: center; padding: 0.75rem 1rem; background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: bold;">🎬 Direct Video URL</a>', unsafe_allow_html=True)
     
-    # Back button
-    st.write("")  # Spacing
-    if st.button("← Back to Browse", type="primary"):
-        st.switch_page("streamlit_frontend.py")
+    # Back Button
+    st.markdown("---")
+    if st.button("← Back to Browse", type="primary", key="back_to_browse_btn"): st.switch_page("streamlit_frontend.py")
