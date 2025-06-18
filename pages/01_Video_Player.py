@@ -61,38 +61,14 @@ def generate_english_subtitles(video_url):
     return "\n".join(subtitles), detected_language
 
 async def get_trope_analysis(movie_title, description_url):
-    """Async wrapper for trope analysis"""
     try:
         return await character_tropes_generator(movie_title, description_url)
     except Exception as e:
-        fallback_analysis = {
-            "film_title": movie_title,
-            "estimated_year": "Unknown",
-            "estimated_genre": "Drama",
-            "plot_available": False,
-            "tropes_identified": [
-                {
-                    "trope_name": "Classic Cinema",
-                    "description": "Elements typical of early filmmaking and storytelling",
-                    "confidence_score": 5,
-                    "evidence": f"Analysis unavailable due to error: {str(e)}"
-                }
-            ],
-            "thematic_elements": ["Classic Cinema", "Historical Significance"],
-            "analysis_summary": f"Unable to perform detailed analysis of {movie_title}. This appears to be a classic film from the public domain collection."
-        }
+        fallback_analysis = { "film_title": movie_title, "estimated_year": "Unknown", "estimated_genre": "Drama", "plot_available": False, "tropes_identified": [{"trope_name": "Classic Cinema", "description": "Elements typical of early filmmaking and storytelling", "confidence_score": 5, "evidence": f"Analysis unavailable due to error: {str(e)}"}], "thematic_elements": ["Classic Cinema", "Historical Significance"], "analysis_summary": f"Unable to perform detailed analysis of {movie_title}. This appears to be a classic film from the public domain collection." }
         return json.dumps(fallback_analysis, indent=2)
 
-logging.basicConfig(level=logging.DEBUG)
-logging.debug("Page Icon Removed")
-
-title = "Video Player - Wikimedia Commons"
-st.set_page_config(
-    page_title="Video Player - Wikimedia Commons",
-    page_icon="🎬",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+# ---- Streamlit App ----
+st.set_page_config(page_title="Video Player - Wikimedia Commons", page_icon="🎬", layout="wide", initial_sidebar_state="collapsed")
 
 # Custom CSS for video player page
 st.markdown("""
