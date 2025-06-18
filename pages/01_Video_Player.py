@@ -212,6 +212,13 @@ if 'selected_video' not in st.session_state or not st.session_state.selected_vid
 else:
     video = st.session_state.selected_video
     movie_title = clean_title(video["canonicaltitle"])
+     
+    subtitle_key = f'subtitles_{video["pageid"]}'
+    lang_key = f'language_{video["pageid"]}'
+    if subtitle_key not in st.session_state:
+        st.session_state[subtitle_key] = None
+        st.session_state[lang_key] = None
+
 
     st.markdown(f'<h1>{movie_title}</h1>', unsafe_allow_html=True)
     st.markdown('<div class="video-player-container">', unsafe_allow_html=True)
