@@ -16,6 +16,9 @@ import urllib.parse # Required for creating the subtitle Data URI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.ai_utils import character_tropes_generator
 
+nest_asyncio.apply()
+
+# --- UTILITY FUNCTIONS (No Changes) ---
 def format_duration(seconds):
     """Convert seconds to human-readable format"""
     return str(timedelta(seconds=int(seconds)))
