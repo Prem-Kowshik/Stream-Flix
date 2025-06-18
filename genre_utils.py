@@ -18,35 +18,37 @@ async def fetch_video_url_title():
                     title = title.rstrip(".ogv")
                     titles.append(title)
     return urls,titles    
-def clean_response(response):
+def clean_response(response, title, url):
     response_text = response.text
     respl=response_text.lstrip("```json")
     respr=respl.rstrip("```")
     print(respr)
     try:
         json_data = json.loads(respr)
+        json_data['title']=title 
+        json_data['url']=url
         return json_data
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
         return None
 async def fetch_genre(title, url):
-    asyncio.Semaphore(10)  # Limit concurrent requests
-    client = genai.Client(api_key="AIzaSyC2bzsTTU5br0H-P-EQReLMHiOvLZLILW8")
-    response = await client.aio.models.generate_content(
-        model="gemini-2.0-flash-lite",
-        contents=f"""Find the genre of the movie with the title: {title}. The movie can be found at this URL: {url}
-        Format the response as a JSON object with the following fields:
-        {{
-            "title": "{title}",
-            "url": "{url}",
-            "genre": "<estimated genre of the film>"
-        }}""",
-        config=GenerateContentConfig(
-            tools=[Tool(google_search=GoogleSearch())],
-        ),
-    )
-    print("task done")
-    return clean_response(response)
+    sem=asyncio.Semaphore(10)  # Limit concurrent requests
+    async with sem:
+        client = genai.Client(api_key="AIzaSyC2bzsTTU5br0H-P-EQReLMHiOvLZLILW8")
+        response = await client.aio.models.generate_content(
+            model="gemini-1.5-flash-8b",
+            contents=f"""Find the genre of the movie with the title: {title}. The movie can be found at this URL: {url}
+            Format the response as a JSON object with the following fields:
+            {{
+                "genre": "<estimated genre of the film>"
+            }}""",
+            config=GenerateContentConfig(
+                tools=[Tool(google_search=GoogleSearch())],
+            ),
+        )
+        print("task done")
+        await asyncio.sleep(1)
+        return clean_response(response, title, url)
 
 async def main():
     asyncio.Semaphore(10)  # Limit concurrent requests
