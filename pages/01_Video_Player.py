@@ -267,6 +267,29 @@ else:
                   unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
+
+    # Subtitle UI is added
+    st.subheader("📝 Generate English Subtitles")
+    if st.button("Generate English Subtitles", key="generate_subtitles_btn"):
+        with st.spinner("Translating audio to English... This may take a few minutes..."):
+            try:
+                subtitles_srt, detected_lang = generate_english_subtitles(video["url"])
+                st.session_state[subtitle_key] = subtitles_srt
+                st.session_state[lang_key] = detected_lang.upper()
+                st.success(f"✅ Detected language: {detected_lang.upper()}. Subtitles are ready!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate subtitles: {e}")
+
+    if st.session_state[subtitle_key]:
+        lang_info = f"Original Language Detected: {st.session_state.get(lang_key, 'N/A')}"
+        st.info(f"Subtitles are active on the video player. {lang_info}")
+        st.download_button(
+            label="Download English Subtitles (.srt)",
+            data=st.session_state[subtitle_key],
+            file_name=f"{movie_title}_English.srt",
+            mime="text/plain",
+            key="subtitle_download_btn")
     
     # AI Analysis Section
     st.markdown('<div class="ai-analysis">', unsafe_allow_html=True)
