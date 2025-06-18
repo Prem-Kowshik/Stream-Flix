@@ -58,7 +58,7 @@ def generate_english_subtitles(video_url):
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
     detected_language = result.get('language', 'unknown')
- subtitles = []
+subtitles = []
     for i, seg in enumerate(result['segments']):
         start = seg['start']
         end = seg['end']
@@ -229,7 +229,7 @@ else:
 
     st.markdown(f"<h1 style='color:#dc2626;text-align:center;'>{movie_title}</h1>", unsafe_allow_html=True)
 
-     if st.session_state[subtitle_key]:
+    if st.session_state[subtitle_key]:
         vtt_subtitles = convert_srt_to_vtt(st.session_state[subtitle_key])
         st.video(video['url'], subtitles=vtt_subtitles)
     else:
