@@ -2,6 +2,7 @@ import nest_asyncio
 import streamlit as st
 import streamlit.components.v1 as components
 from datetime import timedelta
+import logging
 import sys
 import os
 import asyncio

@@ -102,7 +102,9 @@ async def return_video_data():
                 except Exception as e:
                     print(f"Error processing result: {e}")
 
+            print(final_l)
             return final_l
 
 
     return await final()
+asyncio.run(return_video_data())
