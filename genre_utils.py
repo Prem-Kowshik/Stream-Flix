@@ -9,14 +9,11 @@ async def fetch_video_url_title():
     urls = []
     titles=[]
     for item in video_data:
-            for page_id, page_data in item['pages'].items():
-                if 'videoinfo' in page_data and page_data['videoinfo']:
-                    video_info = page_data['videoinfo'][0]
-                    urls.append(video_info['descriptionurl'])    
-                    title=video_info['canonicaltitle'].replace("File:", "")
-                    title =title.rstrip(".webm")
-                    title = title.rstrip(".ogv")
-                    titles.append(title)
+            urls.append(item['url'])
+            title=item['canonicaltitle'].lstrip('File:')
+            title2=title.rstrip('.webm')
+            title3=title2.rstrip('.ogv')
+            titles.append(title3)
     return urls,titles    
 def clean_response(response):
     response_text = response.text
