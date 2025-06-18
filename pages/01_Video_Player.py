@@ -17,6 +17,9 @@ import urllib.parse # Required for creating the subtitle Data URI
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.ai_utils import character_tropes_generator
 
+nest_asyncio.apply()
+
+# --- UTILITY FUNCTIONS (No Changes) ---
 def format_duration(seconds):
     """Convert seconds to human-readable format"""
     return str(timedelta(seconds=int(seconds)))
@@ -32,39 +35,41 @@ def clean_title(title):
     clean = clean.rsplit('.', 1)[0]
     return clean
 
+def format_timestamp(seconds):
+    h = int(seconds // 3600); m = int((seconds % 3600) // 60); s = int(seconds % 60)
+    ms = int((seconds - int(seconds)) * 1000)
+    return f"{h:02}:{m:02}:{s:02},{ms:03}"
+
+def convert_srt_to_vtt(srt_content):
+    vtt_content = srt_content.replace(',', '.')
+    return "WEBVTT\n\n" + vtt_content
+
+def generate_english_subtitles(video_url):
+    model = whisper.load_model("base")
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp_video:
+            tmp_path = tmp_video.name
+            headers = {"User-Agent": "Mozilla/5.0"}
+            video_bytes = requests.get(video_url, headers=headers).content
+            tmp_video.write(video_bytes)
+        result = model.transcribe(tmp_path, task='translate')
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+    detected_language = result.get('language', 'unknown')
+    subtitles = [f"{i+1}\n{format_timestamp(s['start'])} --> {format_timestamp(s['end'])}\n{s['text'].strip()}\n" for i, s in enumerate(result['segments'])]
+    return "\n".join(subtitles), detected_language
+
 async def get_trope_analysis(movie_title, description_url):
-    """Async wrapper for trope analysis"""
     try:
         return await character_tropes_generator(movie_title, description_url)
     except Exception as e:
-        fallback_analysis = {
-            "film_title": movie_title,
-            "estimated_year": "Unknown",
-            "estimated_genre": "Drama",
-            "plot_available": False,
-            "tropes_identified": [
-                {
-                    "trope_name": "Classic Cinema",
-                    "description": "Elements typical of early filmmaking and storytelling",
-                    "confidence_score": 5,
-                    "evidence": f"Analysis unavailable due to error: {str(e)}"
-                }
-            ],
-            "thematic_elements": ["Classic Cinema", "Historical Significance"],
-            "analysis_summary": f"Unable to perform detailed analysis of {movie_title}. This appears to be a classic film from the public domain collection."
-        }
+        fallback_analysis = { "film_title": movie_title, "estimated_year": "Unknown", "estimated_genre": "Drama", "plot_available": False, "tropes_identified": [{"trope_name": "Classic Cinema", "description": "Elements typical of early filmmaking and storytelling", "confidence_score": 5, "evidence": f"Analysis unavailable due to error: {str(e)}"}], "thematic_elements": ["Classic Cinema", "Historical Significance"], "analysis_summary": f"Unable to perform detailed analysis of {movie_title}. This appears to be a classic film from the public domain collection." }
         return json.dumps(fallback_analysis, indent=2)
 
-logging.basicConfig(level=logging.DEBUG)
-logging.debug("Page Icon Removed")
-
-title = "Video Player - Wikimedia Commons"
-st.set_page_config(
-    page_title="Video Player - Wikimedia Commons",
-    page_icon="🎬",
-    layout="centered",
-    initial_sidebar_state="collapsed"
-)
+# ---- Streamlit App ----
+st.set_page_config(page_title="Video Player - Wikimedia Commons", page_icon="🎬", layout="wide", initial_sidebar_state="collapsed")
 
 # Custom CSS for video player page
 st.markdown("""
@@ -208,6 +213,13 @@ if 'selected_video' not in st.session_state or not st.session_state.selected_vid
 else:
     video = st.session_state.selected_video
     movie_title = clean_title(video["canonicaltitle"])
+     
+    subtitle_key = f'subtitles_{video["pageid"]}'
+    lang_key = f'language_{video["pageid"]}'
+    if subtitle_key not in st.session_state:
+        st.session_state[subtitle_key] = None
+        st.session_state[lang_key] = None
+
 
     st.markdown(f'<h1>{movie_title}</h1>', unsafe_allow_html=True)
     st.markdown('<div class="video-player-container">', unsafe_allow_html=True)
@@ -215,6 +227,13 @@ else:
     # Playback speed selector
     speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
 
+    subtitle_track = ""
+    if st.session_state[subtitle_key]:
+        vtt_subs = convert_srt_to_vtt(st.session_state[subtitle_key])
+        # Create a Data URI for the subtitles to embed them directly in the HTML
+        b64_subs = urllib.parse.quote(vtt_subs)
+        subtitle_uri = f"data:text/vtt;charset=utf-8,{b64_subs}"
+        subtitle_track = f'<track label="English" kind="subtitles" srclang="en" src="{subtitle_uri}" default>'
 
     # Custom HTML5 video player with speed control
     video_html = f"""
@@ -249,87 +268,70 @@ else:
                   unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
+
+    # Subtitle UI is added
+    st.subheader("📝 Generate English Subtitles")
+    if st.button("Generate English Subtitles", key="generate_subtitles_btn"):
+        with st.spinner("Translating audio to English... This may take a few minutes..."):
+            try:
+                subtitles_srt, detected_lang = generate_english_subtitles(video["url"])
+                st.session_state[subtitle_key] = subtitles_srt
+                st.session_state[lang_key] = detected_lang.upper()
+                st.success(f"✅ Detected language: {detected_lang.upper()}. Subtitles are ready!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Failed to generate subtitles: {e}")
+
+    if st.session_state[subtitle_key]:
+        lang_info = f"Original Language Detected: {st.session_state.get(lang_key, 'N/A')}"
+        st.info(f"Subtitles are active on the video player. {lang_info}")
+        st.download_button(
+            label="Download English Subtitles (.srt)",
+            data=st.session_state[subtitle_key],
+            file_name=f"{movie_title}_English.srt",
+            mime="text/plain",
+            key="subtitle_download_btn")
     
     # AI Analysis Section
-    st.markdown('<div class="ai-analysis">', unsafe_allow_html=True)
+    st.markdown("---")
     st.subheader("🤖 AI Movie Analysis")
     
     # Initialize session state for analysis if not exists
-    if f'analysis_{video["pageid"]}' not in st.session_state:
-        st.session_state[f'analysis_{video["pageid"]}'] = None
+    analysis_key = f'analysis_{video["pageid"]}'
+    if analysis_key not in st.session_state: st.session_state[analysis_key] = None
     
     # Button to trigger analysis
-    if st.button("🔍 Analyze Movie Tropes", type="primary"):
+    if st.button("🔍 Analyze Movie Tropes", key="analyze_tropes_btn"):
         with st.spinner("🎭 Analyzing movie tropes and themes..."):
             try:
-                # Run async function
-                trope_analysis = asyncio.run(get_trope_analysis(movie_title, video["descriptionurl"]))
-                st.session_state[f'analysis_{video["pageid"]}'] = trope_analysis
+                loop = asyncio.new_event_loop(); asyncio.set_event_loop(loop)
+                trope_analysis = loop.run_until_complete(get_trope_analysis(movie_title, video["descriptionurl"]))
+                st.session_state[analysis_key] = trope_analysis
                 st.success("✅ Analysis completed successfully!")
             except Exception as e:
-                st.error(f"❌ Error during analysis: {str(e)}")
-                st.session_state[f'analysis_{video["pageid"]}'] = None
+                st.error(f"❌ Error during analysis: {str(e)}"); st.session_state[analysis_key] = None
     
     # Display analysis if available
-    if st.session_state[f'analysis_{video["pageid"]}']:
+    if st.session_state[analysis_key]:
         try:
-            trope_data = json.loads(st.session_state[f'analysis_{video["pageid"]}'])
-            
-            # Display movie metadata
-            st.markdown("### 📋 Movie Information")
-            st.markdown(f"""
-            **Film Title:** {trope_data['film_title']}  
-            **Estimated Year:** {trope_data['estimated_year']}  
-            **Genre:** {trope_data['estimated_genre']}  
-            **Plot Available:** {'Yes' if trope_data['plot_available'] else 'No'}
-            """)
-            
-            # Display tropes
-            st.subheader("🎭 Character Tropes")
-            for trope in trope_data['tropes_identified']:
-                st.markdown(f"""
-                <div class="trope-card">
-                    <h4>{trope['trope_name']}</h4>
-                    <p><strong>Description:</strong> {trope['description']}</p>
-                    <p><strong>Confidence Score:</strong> {trope['confidence_score']}/10</p>
-                    <p><strong>Evidence:</strong> {trope['evidence']}</p>
-                </div>
-                """, unsafe_allow_html=True)
-            
-            # Display thematic elements
-            st.subheader("🎨 Thematic Elements")
-            theme_tags = " • ".join(trope_data['thematic_elements'])
-            st.markdown(f"**Themes:** {theme_tags}")
-            
-            # Display analysis summary
-            st.subheader("📝 Analysis Summary")
-            st.write(trope_data['analysis_summary'])
-            
-        except json.JSONDecodeError as e:
-            st.markdown('<div class="error-message">❌ Error parsing analysis data. Please try running the analysis again.</div>', 
-                      unsafe_allow_html=True)
-        except KeyError as e:
-            st.markdown('<div class="error-message">❌ Incomplete analysis data received. Please try again.</div>', 
-                      unsafe_allow_html=True)
-    else:
-        st.info("Click the 'Analyze Movie Tropes' button above to get AI-powered insights about this film's characters, themes, and storytelling elements.")
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Additional information
-    st.subheader("📄 Additional Information")
-    st.write(f"**Original Title:** {video['title']}")
-    st.write(f"**Canonical Title:** {video['canonicaltitle']}")
-    
+            trope_data = json.loads(st.session_state[analysis_key])
+            st.markdown("<h3>📋 Movie Information</h3>", unsafe_allow_html=True); st.markdown(f"**Film Title:** {trope_data['film_title']}  \n**Estimated Year:** {trope_data['estimated_year']}  \n**Genre:** {trope_data['estimated_genre']}  \n**Plot Available:** {'Yes' if trope_data['plot_available'] else 'No'}")
+            st.markdown("<h3>🎭 Character Tropes</h3>", unsafe_allow_html=True)
+            for trope in trope_data['tropes_identified']: st.markdown(f'<div class="trope-card"><h4>{trope["trope_name"]}</h4><p><strong>Description:</strong> {trope["description"]}<br><strong>Confidence:</strong> {trope["confidence_score"]}/10 | <strong>Evidence:</strong> {trope["evidence"]}</p></div>', unsafe_allow_html=True)
+            st.markdown("<h3>🎨 Thematic Elements</h3>", unsafe_allow_html=True); st.markdown(" • ".join([f"`{theme}`" for theme in trope_data['thematic_elements']]))
+            st.markdown("<h3>📝 Analysis Summary</h3>", unsafe_allow_html=True); st.write(trope_data['analysis_summary'])
+        except Exception as e:
+            st.error(f"Error displaying analysis: {str(e)}"); st.code(st.session_state[analysis_key], language='json')
+    else: 
+        st.info("Click the 'Analyze Movie Tropes' button above to get AI-powered insights.")
+
     # Links
+    st.markdown("---")
     st.subheader("🔗 External Links")
     col_link1, col_link2 = st.columns(2)
-    with col_link1:
-        st.markdown(f"[📚 View on Wikimedia Commons]({video['descriptionurl']})")
-    with col_link2:
-        st.markdown(f"[🎬 Direct Video URL]({video['url']})")
+    with col_link1: st.markdown(f'<a href="{video["descriptionurl"]}" target="_blank" style="display: block; width: 100%; text-align: center; padding: 0.75rem 1rem; background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: bold;">📚 View on Wikimedia Commons</a>', unsafe_allow_html=True)
+    with col_link2: st.markdown(f'<a href="{video["url"]}" target="_blank" style="display: block; width: 100%; text-align: center; padding: 0.75rem 1rem; background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: bold;">🎬 Direct Video URL</a>', unsafe_allow_html=True)
     
-    # Back button
-    st.write("")  # Spacing
-    if st.button("← Back to Browse", type="primary"):
-        st.switch_page("streamlit_frontend.py")
+    # Back Button
+    st.markdown("---")
+    if st.button("← Back to Browse", type="primary", key="back_to_browse_btn"): st.switch_page("streamlit_frontend.py")
