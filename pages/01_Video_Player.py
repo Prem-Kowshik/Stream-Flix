@@ -229,48 +229,14 @@ else:
 
     st.markdown(f"<h1 style='color:#dc2626;text-align:center;'>{movie_title}</h1>", unsafe_allow_html=True)
 
-    with st.container():
-        st.markdown("""
-        <style>
-            .video-container {
-                background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
-                border: 2px solid #dc2626;
-                border-radius: 15px;
-                padding: 2rem;
-                box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
-            }
-        </style>
-        """, unsafe_allow_html=True)
+     if st.session_state[subtitle_key]:
+        vtt_subtitles = convert_srt_to_vtt(st.session_state[subtitle_key])
+        st.video(video['url'], subtitles=vtt_subtitles)
+    else:
+        st.video(video['url'])
 
-        st.markdown('<div class="video-container">', unsafe_allow_html=True)
+    st.markdown("""</div>""", unsafe_allow_html=True)
 
-    # Playback speed selector
-    # speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
-
-    subtitle_track = ""
-    if st.session_state[subtitle_key]:
-        vtt_subs = convert_srt_to_vtt(st.session_state[subtitle_key])
-        b64_subs = urllib.parse.quote(vtt_subs)
-        subtitle_uri = f"data:text/vtt;charset=utf-8,{b64_subs}"
-        subtitle_track = f'<track label="English" kind="subtitles" srclang="en" src="{subtitle_uri}" default>'
-
-    video_url = video['url']
-    custom_player = f"""
-    <div style="background: linear-gradient(135deg, #2d2d2d, #1a1a1a); padding: 1rem; border-radius: 15px; border: 2px solid #dc2626; box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3); max-width: 100%; margin: auto;">
-    <div style="position: relative; width: 100%; padding-top: 56.25%; border-radius: 15px; overflow: hidden;">
-        <video id="videoPlayer" controls style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 15px;">
-        <source src="{video_url}" type="video/mp4">
-        {subtitle_track}
-        Your browser does not support the video tag.
-        </video>
-    </div>
-    </div>
-    """
-
-    html(custom_player, height=650)  # Increase slightly if you want margin below player
-
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
    # Technical details
     st.subheader("📊 Video Details")
