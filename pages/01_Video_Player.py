@@ -222,31 +222,12 @@ else:
 
 
     st.markdown(f'<h1>{movie_title}</h1>', unsafe_allow_html=True)
-    st.markdown('<div class="video-player-container">', unsafe_allow_html=True)
 
-    # Playback speed selector
-    speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
-
-    subtitle_track = ""
-    if st.session_state[subtitle_key]:
-        vtt_subs = convert_srt_to_vtt(st.session_state[subtitle_key])
-        # Create a Data URI for the subtitles to embed them directly in the HTML
-        b64_subs = urllib.parse.quote(vtt_subs)
-        subtitle_uri = f"data:text/vtt;charset=utf-8,{b64_subs}"
-        subtitle_track = f'<track label="English" kind="subtitles" srclang="en" src="{subtitle_uri}" default>'
-
-    # Custom HTML5 video player with speed control
-    video_html = f"""
-    <video id=\"customVideo\" width=\"100%\" height=\"auto\" controls>
-      <source src=\"{video['url']}\" type=\"video/mp4\">
-      Your browser does not support the video tag.
-    </video>
-    <script>
-      var video = document.getElementById(\"customVideo\");
-      video.playbackRate = {speed};
-    </script>
-    """
-    components.html(video_html, height=400)
+     if st.session_state[subtitle_key]:
+        vtt_subtitles = convert_srt_to_vtt(st.session_state[subtitle_key])
+        st.video(video['url'], subtitles=vtt_subtitles)
+    else:
+        st.video(video['url'])
 
     st.markdown("""</div>""", unsafe_allow_html=True)
 
