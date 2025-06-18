@@ -296,20 +296,19 @@ else:
     st.subheader("🤖 AI Movie Analysis")
     
     # Initialize session state for analysis if not exists
-    if f'analysis_{video["pageid"]}' not in st.session_state:
-        st.session_state[f'analysis_{video["pageid"]}'] = None
+    analysis_key = f'analysis_{video["pageid"]}'
+    if analysis_key not in st.session_state: st.session_state[analysis_key] = None
     
     # Button to trigger analysis
-    if st.button("🔍 Analyze Movie Tropes", type="primary"):
+    if st.button("🔍 Analyze Movie Tropes", key="analyze_tropes_btn"):
         with st.spinner("🎭 Analyzing movie tropes and themes..."):
             try:
-                # Run async function
-                trope_analysis = asyncio.run(get_trope_analysis(movie_title, video["descriptionurl"]))
-                st.session_state[f'analysis_{video["pageid"]}'] = trope_analysis
+                loop = asyncio.new_event_loop(); asyncio.set_event_loop(loop)
+                trope_analysis = loop.run_until_complete(get_trope_analysis(movie_title, video["descriptionurl"]))
+                st.session_state[analysis_key] = trope_analysis
                 st.success("✅ Analysis completed successfully!")
             except Exception as e:
-                st.error(f"❌ Error during analysis: {str(e)}")
-                st.session_state[f'analysis_{video["pageid"]}'] = None
+                st.error(f"❌ Error during analysis: {str(e)}"); st.session_state[analysis_key] = None
     
     # Display analysis if available
     if st.session_state[f'analysis_{video["pageid"]}']:
