@@ -78,6 +78,37 @@ class CacheManager:
             logger.error(f"Failed to load cache from disk: {e}")
             return None
     def clear_disk_cache(self) -> int:
+        try:
+            files_removed = 0
+            
+            # Check if the cache directory exists
+            if not os.path.exists(self.cache_dir):
+                logger.error(f"Cache directory '{self.cache_dir}' does not exist.")
+                return 0
+            
+            logger.info(f"Checking cache directory: {self.cache_dir}")
+            
+            # List all files in the directory
+            for filename in os.listdir(self.cache_dir):
+                file_path = os.path.join(self.cache_dir, filename)
+                
+                # Check if it's a file and has .pkl extension
+                if os.path.isfile(file_path) and filename.endswith('.pkl'):
+                    try:
+                        logger.info(f"Attempting to delete: {file_path}")
+                        os.remove(file_path)
+                        files_removed += 1
+                        logger.info(f"Successfully deleted: {file_path}")
+                    except Exception as e:
+                        logger.error(f"Error deleting {file_path}: {e}")
+            
+            logger.info(f"Cleared {files_removed} cache files from disk")
+            return files_removed
+        except Exception as e:
+            logger.error(f"Failed to clear disk cache: {e}")
+            return 0
+
+    '''def clear_disk_cache(self) -> int:
         """Clear all disk cache and return number of files removed"""
         try:
             files_removed = 0
@@ -90,7 +121,7 @@ class CacheManager:
             return files_removed
         except Exception as e:
             logger.error(f"Failed to clear disk cache: {e}")
-            return 0
+            return 0'''
 
 # Global cache manager instance
 cache_manager = CacheManager()
@@ -105,6 +136,8 @@ def async_cache_with_session_state(ttl_minutes: int = 30):
         @wraps(func)
         async def wrapper(*args, **kwargs):
             # Generate cache key
+            global cache_key
+            global session_cache_key
             cache_key = cache_manager._generate_cache_key(func.__name__, *args, **kwargs)
             session_cache_key = f"cache_{func.__name__}_{cache_key}"
             
@@ -477,6 +510,7 @@ if st.button("🔄 Load Genre Data") or st.session_state.genre_data:
         # Add a button to clear and refresh the data
         if st.button("🔄 Refresh Genre Data"):
             st.session_state.genre_data = None
+            cache_manager.clear_disk_cache()
             st.rerun()
             
     else:
