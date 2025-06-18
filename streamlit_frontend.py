@@ -617,7 +617,6 @@ async def main():
 
     # Search container
     with st.container():
-        st.markdown('<div class="search-container">', unsafe_allow_html=True)
         st.markdown("### 🔍 Search Movies")
         
         col1, col2 = st.columns([4, 1])
