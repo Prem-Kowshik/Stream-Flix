@@ -63,7 +63,7 @@ def generate_english_subtitles(video_url):
         start = seg['start']
         end = seg['end']
         text = seg['text'].strip()
-        subtitles.append(f"{i+1}\n{format_timestamp(start)}
+        subtitles.append(f"{i+1}\n{format_timestamp(start)} --> {format_timestamp(end)}\n{text}\n")
 
         return "\n".join(subtitles), detected_language
 
