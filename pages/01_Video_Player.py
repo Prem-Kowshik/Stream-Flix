@@ -58,7 +58,12 @@ def generate_english_subtitles(video_url):
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
     detected_language = result.get('language', 'unknown')
-    subtitles = [f"{i+1}\n{format_timestamp(s['start'])} --> {format_timestamp(s['end'])}\n{s['text'].strip()}\n" for i, s in enumerate(result['segments'])]
+ subtitles = []
+    for i, seg in enumerate(result['segments']):
+        start = seg['start']
+        end = seg['end']
+        text = seg['text'].strip()
+        subtitles.append(f"{i+1}\n{format_timestamp(start)}
     return "\n".join(subtitles), detected_language
 
 async def get_trope_analysis(movie_title, description_url):
