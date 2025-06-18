@@ -11,6 +11,7 @@ import whisper
 import tempfile
 import requests
 import urllib.parse # Required for creating the subtitle Data URI
+from streamlit.components.v1 import html
 
 
 # Add the parent directory to the Python path
@@ -71,140 +72,140 @@ async def get_trope_analysis(movie_title, description_url):
 # ---- Streamlit App ----
 st.set_page_config(page_title="Video Player - Wikimedia Commons", page_icon="🎬", layout="wide", initial_sidebar_state="collapsed")
 
-# Custom CSS for video player page
-st.markdown("""
-<style>
-    /* Main theme colors */
-    .stApp {
-        background-color: #1a1a1a;
-        color: #ffffff;
-    }
+# # Custom CSS for video player page
+# st.markdown("""
+# <style>
+#     /* Main theme colors */
+#     .stApp {
+#         background-color: #1a1a1a;
+#         color: #ffffff;
+#     }
     
-    /* Video player container */
-    .video-player-container {
-        background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-        border: 2px solid #dc2626;
-        border-radius: 15px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
-    }
+#     /* Video player container */
+#     .video-player-container {
+#         background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+#         border: 2px solid #dc2626;
+#         border-radius: 15px;
+#         padding: 2rem;
+#         margin-bottom: 2rem;
+#         box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+#     }
     
-    /* Title styling */
-    h1 {
-        color: #dc2626 !important;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        text-align: center;
-        margin-bottom: 2rem !important;
-    }
+#     /* Title styling */
+#     h1 {
+#         color: #dc2626 !important;
+#         text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+#         text-align: center;
+#         margin-bottom: 2rem !important;
+#     }
     
-    /* Metric styling */
-    .metric-container {
-        background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-        border: 1px solid #dc2626;
-        border-radius: 10px;
-        padding: 1rem;
-        text-align: center;
-        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
-    }
+#     /* Metric styling */
+#     .metric-container {
+#         background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+#         border: 1px solid #dc2626;
+#         border-radius: 10px;
+#         padding: 1rem;
+#         text-align: center;
+#         box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+#     }
     
-    /* Button styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-        color: white;
-        border: none;
-        border-radius: 10px;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
-    }
+#     /* Button styling */
+#     .stButton > button {
+#         background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+#         color: white;
+#         border: none;
+#         border-radius: 10px;
+#         padding: 0.5rem 1rem;
+#         font-weight: bold;
+#         transition: all 0.3s ease;
+#         box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+#     }
     
-    .stButton > button:hover {
-        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(220, 38, 38, 0.4);
-    }
+#     .stButton > button:hover {
+#         background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+#         transform: translateY(-2px);
+#         box-shadow: 0 6px 15px rgba(220, 38, 38, 0.4);
+#     }
     
-    /* Video player styling */
-    .stVideo {
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
-    }
+#     /* Video player styling */
+#     .stVideo {
+#         border-radius: 15px;
+#         overflow: hidden;
+#         box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+#     }
     
-    /* AI Analysis container */
-    .ai-analysis {
-        background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-        border: 2px solid #dc2626;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 2rem 0;
-        box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
-    }
+#     /* AI Analysis container */
+#     .ai-analysis {
+#         background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+#         border: 2px solid #dc2626;
+#         border-radius: 15px;
+#         padding: 1.5rem;
+#         margin: 2rem 0;
+#         box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+#     }
     
-    .ai-analysis h2 {
-        color: #dc2626 !important;
-        margin-bottom: 1rem !important;
-    }
+#     .ai-analysis h2 {
+#         color: #dc2626 !important;
+#         margin-bottom: 1rem !important;
+#     }
     
-    .ai-analysis p {
-        color: #ffffff;
-        line-height: 1.6;
-        font-size: 1.1rem;
-    }
+#     .ai-analysis p {
+#         color: #ffffff;
+#         line-height: 1.6;
+#         font-size: 1.1rem;
+#     }
     
-    /* Trope card styling */
-    .trope-card {
-        background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-        border: 1px solid #dc2626;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
-    }
+#     /* Trope card styling */
+#     .trope-card {
+#         background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+#         border: 1px solid #dc2626;
+#         border-radius: 10px;
+#         padding: 1rem;
+#         margin: 1rem 0;
+#         box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
+#     }
     
-    .trope-card h4 {
-        color: #dc2626 !important;
-        margin-bottom: 0.5rem !important;
-    }
+#     .trope-card h4 {
+#         color: #dc2626 !important;
+#         margin-bottom: 0.5rem !important;
+#     }
     
-    /* Error message styling */
-    .error-message {
-        background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
-        border: 1px solid #dc2626;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-        color: white;
-    }
+#     /* Error message styling */
+#     .error-message {
+#         background: linear-gradient(135deg, #991b1b 0%, #7f1d1d 100%);
+#         border: 1px solid #dc2626;
+#         border-radius: 10px;
+#         padding: 1rem;
+#         margin: 1rem 0;
+#         color: white;
+#     }
     
-    /* Success message styling */
-    .success-message {
-        background: linear-gradient(135deg, #166534 0%, #15803d 100%);
-        border: 1px solid #22c55e;
-        border-radius: 10px;
-        padding: 1rem;
-        margin: 1rem 0;
-        color: white;
-    }
+#     /* Success message styling */
+#     .success-message {
+#         background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+#         border: 1px solid #22c55e;
+#         border-radius: 10px;
+#         padding: 1rem;
+#         margin: 1rem 0;
+#         color: white;
+#     }
     
-    /* Loading animation */
-    .loading {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(220, 38, 38, 0.3);
-        border-radius: 50%;
-        border-top-color: #dc2626;
-        animation: spin 1s ease-in-out infinite;
-    }
+#     /* Loading animation */
+#     .loading {
+#         display: inline-block;
+#         width: 20px;
+#         height: 20px;
+#         border: 3px solid rgba(220, 38, 38, 0.3);
+#         border-radius: 50%;
+#         border-top-color: #dc2626;
+#         animation: spin 1s ease-in-out infinite;
+#     }
     
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-</style>
-""", unsafe_allow_html=True)
+#     @keyframes spin {
+#         to { transform: rotate(360deg); }
+#     }
+# </style>
+# """, unsafe_allow_html=True)
 
 if 'selected_video' not in st.session_state or not st.session_state.selected_video:
     st.error("No video selected. Please select a video from the browse page.")
@@ -221,34 +222,50 @@ else:
         st.session_state[lang_key] = None
 
 
-    st.markdown(f'<h1>{movie_title}</h1>', unsafe_allow_html=True)
-    st.markdown('<div class="video-player-container">', unsafe_allow_html=True)
+    st.markdown(f"<h1 style='color:#dc2626;text-align:center;'>{movie_title}</h1>", unsafe_allow_html=True)
+
+    with st.container():
+        st.markdown("""
+        <style>
+            .video-container {
+                background: linear-gradient(135deg, #2d2d2d, #1a1a1a);
+                border: 2px solid #dc2626;
+                border-radius: 15px;
+                padding: 2rem;
+                box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+            }
+        </style>
+        """, unsafe_allow_html=True)
+
+        st.markdown('<div class="video-container">', unsafe_allow_html=True)
 
     # Playback speed selector
-    speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
+    # speed = st.selectbox("Select playback speed", [0.25, 0.5, 1.0, 1.25, 1.5, 2.0], index=2)
 
     subtitle_track = ""
     if st.session_state[subtitle_key]:
         vtt_subs = convert_srt_to_vtt(st.session_state[subtitle_key])
-        # Create a Data URI for the subtitles to embed them directly in the HTML
         b64_subs = urllib.parse.quote(vtt_subs)
         subtitle_uri = f"data:text/vtt;charset=utf-8,{b64_subs}"
         subtitle_track = f'<track label="English" kind="subtitles" srclang="en" src="{subtitle_uri}" default>'
 
-    # Custom HTML5 video player with speed control
-    video_html = f"""
-    <video id=\"customVideo\" width=\"100%\" height=\"auto\" controls>
-      <source src=\"{video['url']}\" type=\"video/mp4\">
-      Your browser does not support the video tag.
-    </video>
-    <script>
-      var video = document.getElementById(\"customVideo\");
-      video.playbackRate = {speed};
-    </script>
+    video_url = video['url']
+    custom_player = f"""
+    <div style="background: linear-gradient(135deg, #2d2d2d, #1a1a1a); padding: 1rem; border-radius: 15px; border: 2px solid #dc2626; box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3); max-width: 100%; margin: auto;">
+    <div style="position: relative; width: 100%; padding-top: 56.25%; border-radius: 15px; overflow: hidden;">
+        <video id="videoPlayer" controls style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 15px;">
+        <source src="{video_url}" type="video/mp4">
+        {subtitle_track}
+        Your browser does not support the video tag.
+        </video>
+    </div>
+    </div>
     """
-    components.html(video_html, height=400)
 
-    st.markdown("""</div>""", unsafe_allow_html=True)
+    html(custom_player, height=650)  # Increase slightly if you want margin below player
+
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
    # Technical details
     st.subheader("📊 Video Details")
