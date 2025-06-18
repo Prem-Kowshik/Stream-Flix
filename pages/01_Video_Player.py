@@ -64,7 +64,8 @@ def generate_english_subtitles(video_url):
         end = seg['end']
         text = seg['text'].strip()
         subtitles.append(f"{i+1}\n{format_timestamp(start)}
-    return "\n".join(subtitles), detected_language
+
+        return "\n".join(subtitles), detected_language
 
 async def get_trope_analysis(movie_title, description_url):
     try:
