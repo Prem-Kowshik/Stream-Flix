@@ -292,7 +292,7 @@ else:
             key="subtitle_download_btn")
     
     # AI Analysis Section
-    st.markdown('<div class="ai-analysis">', unsafe_allow_html=True)
+    st.markdown("---")
     st.subheader("🤖 AI Movie Analysis")
     
     # Initialize session state for analysis if not exists
