@@ -6,7 +6,7 @@ from google.genai.types import (GenerateContentConfig,GoogleSearch,HttpOptions,T
 import json
 import streamlit as st
 from tenacity import retry, wait_random_exponential
-GEMINI_API_KEY=st.secrets["GEMINI_API_KEY"]
+GEMINI_API_KEY="AIzaSyC2bzsTTU5br0H-P-EQReLMHiOvLZLILW8"
 async def fetch_video_url_title():
     video_data = await return_video_data()
     urls = []
