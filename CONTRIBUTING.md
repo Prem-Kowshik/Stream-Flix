@@ -90,3 +90,7 @@ This document provides guidelines for contributing to this project.
     pip install black
     black .
     ```
+4.  Commit your changes with a descriptive commit message:
+    ```bash
+    git commit -am "feat: Add a concise description of your feature"
+    ```
