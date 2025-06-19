@@ -57,7 +57,7 @@ This document provides guidelines for contributing to this project.
 
 2.  **Clone the repository:**
     ```bash
-    git clone https://gitlab.com/your-username/your-project.git
+    git clone https://code.swecha.org/premk/Wikiflix_OTT
     cd your-project
     ```
 
