@@ -20,3 +20,7 @@
 20. Edited README.md
 21. Added CONTRIBUTING.md
 22. Added CHANGELOG.md
+23. added 01_Video_Player.py
+24. Added 02_Movie_Details.py
+25. Fixed ai trope analyser
+26. Update ai_utils.py
