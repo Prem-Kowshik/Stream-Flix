@@ -2,6 +2,7 @@ import nest_asyncio
 import streamlit as st
 import streamlit.components.v1 as components
 from datetime import timedelta
+import logging
 import sys
 import os
 import asyncio
@@ -49,14 +50,8 @@ def generate_english_subtitles(video_url):
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
     detected_language = result.get('language', 'unknown')
-    subtitles = []
-    for i, seg in enumerate(result['segments']):
-        start = seg['start']
-        end = seg['end']
-        text = seg['text'].strip()
-        subtitles.append(f"{i+1}\n{format_timestamp(start)} --> {format_timestamp(end)}\n{text}\n")
-
-        return "\n".join(subtitles), detected_language
+    subtitles = [f"{i+1}\n{format_timestamp(s['start'])} --> {format_timestamp(s['end'])}\n{s['text'].strip()}\n" for i, s in enumerate(result['segments'])]
+    return "\n".join(subtitles), detected_language
 
 async def get_trope_analysis(movie_title, description_url):
     try:
@@ -93,17 +88,81 @@ else:
         st.session_state[subtitle_key] = None
         st.session_state[lang_key] = None
 
-
-    st.markdown(f"<h1 style='color:#dc2626;text-align:center;'>{movie_title}</h1>", unsafe_allow_html=True)
-
+    subtitle_track = ""
     if st.session_state[subtitle_key]:
-        vtt_subtitles = convert_srt_to_vtt(st.session_state[subtitle_key])
-        st.video(video['url'], subtitles=vtt_subtitles)
-    else:
-        st.video(video['url'])
+        vtt_subs = convert_srt_to_vtt(st.session_state[subtitle_key])
+        b64_subs = urllib.parse.quote(vtt_subs)
+        subtitle_uri = f"data:text/vtt;charset=utf-8,{b64_subs}"
+        subtitle_track = f'<track label="English" kind="subtitles" srclang="en" src="{subtitle_uri}" default>'
 
-    st.markdown("""</div>""", unsafe_allow_html=True)
+    left_col, right_col = st.columns([3, 1])
 
+    with left_col:
+        st.markdown(f"""
+        <div style='text-align:left;'>
+        <h2>🎬 {movie_title}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+        video_html = f"""
+        <style>
+            .video-container {{
+                position: relative;
+                width: 100%;
+                height: 600px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 8px 25px rgba(220, 38, 38, 0.3);
+                background-color: black;
+            }}
+            .video-container video {{
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+            }}
+            .playback-select-wrapper {{
+                position: absolute;
+                bottom: 220px;
+                right: 20px;
+                background: rgba(0,0,0,0.85);
+                border-radius: 8px;
+                padding: 6px 10px;
+                color: white;
+                z-index: 10;
+            }}
+            .playback-select-wrapper select {{
+                background: #dc2626;
+                color: white;
+                border: none;
+                padding: 4px 8px;
+                border-radius: 4px;
+            }}
+        </style>
+        <div class="video-container">
+            <video id="customVideo" controls>
+                <source src="{video['url']}" type="video/mp4">
+                {subtitle_track}
+                Your browser does not support the video tag.
+            </video>
+            <div class="playback-select-wrapper">
+                <label for="speedSelector">Speed:</label>
+                <select id="speedSelector" onchange="document.getElementById('customVideo').playbackRate = parseFloat(this.value);">
+                    <option value="0.25">0.25x</option>
+                    <option value="0.5">0.5x</option>
+                    <option value="0.75">0.75x</option>
+                    <option value="1.0" selected>1.0x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2.0">2.0x</option>
+                </select>
+            </div>
+        </div>
+        """
+        components.html(video_html, height=650)
+
+    with right_col:
+        if st.button("← Back to Browse", type="primary"):
+            st.switch_page("streamlit_frontend.py")
 
         st.markdown("### 📊 Video Metadata")
         st.markdown(f"""
