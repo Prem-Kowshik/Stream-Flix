@@ -84,3 +84,9 @@ This document provides guidelines for contributing to this project.
     git checkout -b feature/your-amazing-feature
     ```
 2.  Make your changes to the code
+
+3.  Ensure your code adheres to the project's style. We use `black` for code formatting.
+    ```bash
+    pip install black
+    black .
+    ```
