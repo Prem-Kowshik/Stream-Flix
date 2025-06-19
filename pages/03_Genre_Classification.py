@@ -495,7 +495,7 @@ if st.button("🔄 Load Genre Data") or st.session_state.genre_data:
                     
                     col1, col2 = st.columns(2)
                     with col1:
-                        if st.button("📋 Details", key=f"details-{movie['title']}-{i}"):
+                        if st.button("📋 Details", key=f"details-{movie['title']}-{i}-{int(time.time())}"):
                             # Create a video object for the session state
                             st.session_state.selected_video = create_video_object(movie)
                             st.switch_page("pages/02_Movie_Details.py")
