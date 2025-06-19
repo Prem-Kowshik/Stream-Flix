@@ -754,6 +754,20 @@ async def main():
         st.markdown("</div>", unsafe_allow_html=True)
 
 
+    # Search container
+    with st.container():
+        st.markdown("### 🔍 Search Movies")
+        
+        col1, col2 = st.columns([4, 1])
+        
+        with col1:
+            search_term = st.text_input("", placeholder="Search for classic films, actors, or directors...", label_visibility="collapsed")
+        
+        with col2:
+            st.write("")  # Spacing
+            search_button = st.button("🔍 Search", type="primary")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
 
     # Get videos based on search or load initial data
     if search_button or search_term or not st.session_state.all_videos:
