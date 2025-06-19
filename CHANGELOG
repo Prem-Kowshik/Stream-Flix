@@ -24,3 +24,9 @@
 24. Added 02_Movie_Details.py
 25. Fixed ai trope analyser
 26. Update ai_utils.py
+27. Added genre classifications
+28. Added frontend_for_genre_classification
+29. Added Playback button feature into 01_Video_Player.py
+30. Edited response_testing.py
+31. Added thumbnails to streamlit.frontend.py
+32. Added subtitles feature to 01_Video_Player.py
