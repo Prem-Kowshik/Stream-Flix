@@ -5,6 +5,7 @@ from google.genai import types
 from google.genai.types import (GenerateContentConfig,GoogleSearch,HttpOptions,Tool)
 import json
 from tenacity import retry, wait_random_exponential
+GEMINI_API_KEY=st.secrets["GEMINI_API_KEY"]
 async def fetch_video_url_title():
     video_data = await return_video_data()
     urls = []
@@ -33,7 +34,7 @@ def clean_response(response):
 async def fetch_genre(title, url):
     sem2=asyncio.Semaphore(15)  # Limit concurrent requests
     async with sem2:
-        client = genai.Client(api_key="AIzaSyC2bzsTTU5br0H-P-EQReLMHiOvLZLILW8")
+        client = genai.Client(api_key=GEMINI_API_KEY)
         response = await client.aio.models.generate_content(
             model="gemini-2.0-flash-lite",
             contents=f"""Find the genre of the movie with the title: {title}. The movie can be found at this URL: {url}
