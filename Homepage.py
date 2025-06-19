@@ -1031,6 +1031,17 @@ async def main():
     videos = all_videos[:st.session_state.display_count]
 
     if videos:
+        for video in videos:
+            try:
+                print(video['duration'])
+                print(video['canonicaltitle'])
+                print(video['size'])
+                print(video['width'])
+                print(video['height'])
+                print(video['url'])
+                print(video['pageid'])
+            except KeyError:
+                videos.remove(video)
         # Stats container
         st.markdown(f"""
         <div class="stats-container">
@@ -1045,7 +1056,7 @@ async def main():
                     <div class="stat-label">Total Available</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">{sum(video['duration'] for video in videos) / 3600:.1f}h</span>
+                    <span class="stat-number">{sum( video['duration'] for video in videos) / 3600:.1f}h</span>
                     <div class="stat-label">Total Runtime</div>
                 </div>
                 <div class="stat-item">
