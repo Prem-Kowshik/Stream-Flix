@@ -6,6 +6,7 @@ from datetime import timedelta
 import json
 from response_testing import return_video_data
 import asyncio
+import random
 
 async def main():
     # Set up the page
@@ -612,6 +613,187 @@ async def main():
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary-red-light);
         }
+        
+                /* Enhanced Netflix-style Hero Carousel */
+        .hero-carousel {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 20px;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 50px var(--shadow-red);
+        }
+
+        .hero-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: brightness(0.4);
+            border-radius: 20px;
+            transition: all 0.5s ease;
+        }
+
+        .hero-gradient-top,
+        .hero-gradient-bottom {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 120px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero-gradient-top {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        }
+
+        .hero-gradient-bottom {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 3rem;
+            z-index: 2;
+            color: white;
+            max-width: 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .hero-movie-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, var(--primary-red), var(--primary-red-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(220, 38, 38, 0.8);
+            line-height: 1.1;
+        }
+
+        .hero-meta {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .hero-description {
+            font-size: 1rem;
+            color: var(--text-primary);
+            max-width: 90%;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            z-index: 3;
+        }
+
+        .hero-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--primary-red);
+            color: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-size: 1.5rem;
+            z-index: 3;
+        }
+
+        .hero-nav:hover {
+            background: var(--primary-red);
+            border-color: var(--primary-red-light);
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 10px 25px var(--shadow-red);
+        }
+
+        .hero-nav.prev {
+            left: 30px;
+        }
+
+        .hero-nav.next {
+            right: 30px;
+        }
+
+        .hero-indicators {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 3;
+        }
+
+        .hero-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .hero-dot.active {
+            background: var(--primary-red);
+            border-color: var(--primary-red-light);
+            transform: scale(1.2);
+            box-shadow: 0 0 10px var(--shadow-red);
+        }
+
+        .hero-dot:hover {
+            background: var(--primary-red-light);
+            transform: scale(1.1);
+        }
+
+        /* Responsive hero design */
+        @media (max-width: 768px) {
+            .hero-content {
+                max-width: 90%;
+                padding: 2rem;
+            }
+            
+            .hero-movie-title {
+                font-size: 2rem;
+            }
+            
+            .hero-nav {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+            
+            .hero-nav.prev {
+                left: 15px;
+            }
+            
+            .hero-nav.next {
+                right: 15px;
+            }
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -754,20 +936,6 @@ async def main():
         st.markdown("</div>", unsafe_allow_html=True)
 
 
-    # Search container
-    with st.container():
-        st.markdown("### 🔍 Search Movies")
-        
-        col1, col2 = st.columns([4, 1])
-        
-        with col1:
-            search_term = st.text_input("", placeholder="Search for classic films, actors, or directors...", label_visibility="collapsed")
-        
-        with col2:
-            st.write("")  # Spacing
-            search_button = st.button("🔍 Search", type="primary")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
 
     # Get videos based on search or load initial data
     if search_button or search_term or not st.session_state.all_videos:
@@ -778,34 +946,86 @@ async def main():
         all_videos = st.session_state.all_videos
 
     # Carousel of 5 featured videos
-    import random
-
+    # Always use videos from the API (all_videos), fallback to MOCK_DATA only if empty
+    carousel_source = all_videos if all_videos else MOCK_DATA
+    # Ensure carousel_index is initialized
     if 'carousel_index' not in st.session_state:
         st.session_state.carousel_index = 0
-
-    carousel_videos = random.sample(all_videos or MOCK_DATA, min(len(all_videos or MOCK_DATA), 5))
+    carousel_videos = random.sample(carousel_source, min(len(carousel_source), 5))
     carousel_index = st.session_state.carousel_index
+    # Ensure index is in range
+    if carousel_index >= len(carousel_videos):
+        carousel_index = 0
+        st.session_state.carousel_index = 0
     video = carousel_videos[carousel_index]
 
-    st.markdown(f"""
-    <div style='position: relative; height: 500px; overflow: hidden; border-radius: 20px; box-shadow: 0 10px 30px rgba(220,38,38,0.3); margin-bottom: 2rem;'>
-        <img src="{video.get('thumburl', '')}" style="width:100%; height: 100%; object-fit:cover; filter:brightness(0.6); border-radius: 20px;" />
-        <div style='position: absolute; bottom: 20px; left: 20px; color: white;'>
-            <h2 style='margin:0; font-size: 2.5rem;'>{clean_title(video['title'])}</h2>
-            <p style='margin-top: 0.5rem;'>⏱ {format_duration(video['duration'])} • 📁 {format_size(video['size'])}</p>
+    # Generate a simple description for the video
+    descriptions = [
+        "A timeless classic that showcases the golden age of cinema with unforgettable performances and stunning visuals.",
+        "Experience the magic of early filmmaking in this masterpiece that continues to captivate audiences worldwide.",
+        "This iconic film represents a milestone in cinematic history with its groundbreaking techniques and storytelling.",
+        "Discover the artistry and craftsmanship of vintage cinema in this beautifully preserved classic.",
+        "Journey into the past with this remarkable film that demonstrates the enduring power of great storytelling."
+    ]
+    current_description = descriptions[carousel_index % len(descriptions)]
+
+    # Carousel HTML (only once), with Watch button overlay using Streamlit
+    st.markdown(f'''
+    <style>
+    .carousel-img-container {{
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }}
+    .carousel-watch-btn-container {{
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 30;
+    }}
+    </style>
+    <div class="hero-carousel">
+        <div class="carousel-img-container" style="min-height: 400px;">
+            <img src="{video.get('thumburl', 'https://via.placeholder.com/1280x720/333/fff?text=No+Image')}" class="hero-bg" alt="Hero Background" />
+            <div class="carousel-watch-btn-container" id="carousel-watch-btn"></div>
+        </div>
+        <div class="hero-gradient-top"></div>
+        <div class="hero-gradient-bottom"></div>
+        <div class="hero-content">
+            <h1 class="hero-movie-title">{clean_title(video['title'])}</h1>
+            <p class="hero-meta">⏱ {format_duration(video['duration'])} • {video['width']}×{video['height']} • 📁 {format_size(video['size'])}</p>
+            <p class="hero-description">{current_description}</p>
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    ''', unsafe_allow_html=True)
 
-    carousel_col1, carousel_col2 = st.columns([1, 1])
-    with carousel_col1:
-        if st.button("⬅️", key="prev_slide"):
+    # Overlay the Watch button using Streamlit's absolute positioning (centered on thumbnail)
+    watch_btn_placeholder = st.empty()
+    watch_btn_html = '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:30;"></div>'
+    watch_btn_placeholder.markdown(watch_btn_html, unsafe_allow_html=True)
+    if watch_btn_placeholder.button("▶️ Watch", key="hero_watch", help="Watch this video", use_container_width=False):
+        st.session_state.selected_video = video
+        st.switch_page("pages/01_Video_Player.py")
+
+    # Overlay navigation buttons using Streamlit columns (left and right)
+    nav_cols = st.columns([1, 6, 1])
+    with nav_cols[0]:
+        if st.button("⬅️", key="hero_prev", help="Previous video", use_container_width=True):
             st.session_state.carousel_index = (carousel_index - 1) % len(carousel_videos)
             st.rerun()
-    with carousel_col2:
-        if st.button("➡️", key="next_slide"):
+    with nav_cols[2]:
+        if st.button("➡️", key="hero_next", help="Next video", use_container_width=True):
             st.session_state.carousel_index = (carousel_index + 1) % len(carousel_videos)
             st.rerun()
+
+    # Carousel indicator dots
+    dots_html = '<div class="hero-indicators">'
+    for idx in range(len(carousel_videos)):
+        active_class = "active" if idx == carousel_index else ""
+        dots_html += f'<div class="hero-dot {active_class}"></div>'
+    dots_html += '</div>'
+    st.markdown(dots_html, unsafe_allow_html=True)
 
     # Get the current batch of videos to display
     videos = all_videos[:st.session_state.display_count]
@@ -835,53 +1055,43 @@ async def main():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
         # Display videos in a grid layout 🎬
         cols = st.columns(3)
-        
-    for i, video in enumerate(videos):
-        col = cols[i % 3]
-
-        with col:
-            st.markdown(f"""
-            <div class="video-card">
-                <div class="video-thumbnail">
-                    <img src="{video.get('thumburl') or 'https://pin.it/6OUANYdb1'}" alt="Thumbnail" style="width:100%; height:100%; object-fit:cover; border-radius: 20px 20px 0 0;" />
-                </div>
-                <div class="video-info">
-                    <h4 class="video-title">{clean_title(video['canonicaltitle'])}</h4>
-                    <div class="video-metadata">
-                        <div class="metadata-item">
-                            <span class="metadata-label">⏱️ Duration:</span>
-                            <span class="metadata-value">{format_duration(video['duration'])}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">📐 Resolution:</span>
-                            <span class="metadata-value">{video['width']}×{video['height']}</span>
-                        </div>
-                        <div class="metadata-item">
-                            <span class="metadata-label">📁 Size:</span>
-                            <span class="metadata-value">{format_size(video['size'])}</span>
-                        </div>
+        for i, video in enumerate(videos):
+            col = cols[i % 3]
+            with col:
+                st.markdown(f"""
+                <div class="video-card">
+                    <div class="video-thumbnail">
+                        <img src="{video.get('thumburl') or 'https://pin.it/6OUANYdb1'}" alt="Thumbnail" style="width:100%; height:100%; object-fit:cover; border-radius: 20px 20px 0 0;" />
                     </div>
-                    <div class="button-container">
-            """, unsafe_allow_html=True)
-
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("📋 Details", key=f"details-{video['pageid']}-{i}", type="primary"):
-                    st.session_state.selected_video = video
-                    st.switch_page("pages/02_Movie_Details.py")
-            with col2:
+                    <div class="video-info">
+                        <h4 class="video-title">{clean_title(video['canonicaltitle'])}</h4>
+                        <div class="video-metadata">
+                            <div class="metadata-item">
+                                <span class="metadata-label">⏱️ Duration:</span>
+                                <span class="metadata-value">{format_duration(video['duration'])}</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">📐 Resolution:</span>
+                                <span class="metadata-value">{video['width']}×{video['height']}</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">📁 Size:</span>
+                                <span class="metadata-value">{format_size(video['size'])}</span>
+                            </div>
+                        </div>
+                        <div class="button-container">
+                """, unsafe_allow_html=True)
+                # Only Watch button (no Details)
                 if st.button("▶️ Watch", key=f"watch-{video['pageid']}-{i}", type="primary"):
                     st.session_state.selected_video = video
                     st.switch_page("pages/01_Video_Player.py")
-
-            st.markdown("""
+                st.markdown("""
+                        </div>
                     </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
             
     # Load more button
     if len(all_videos) > st.session_state.display_count:
