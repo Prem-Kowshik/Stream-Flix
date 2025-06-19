@@ -18,3 +18,8 @@ This document provides guidelines for contributing to this project.
     - [Git](https://git-scm.com/)
     - [Python 3.9+](https://www.python.org/)
     - [FFmpeg](https://ffmpeg.org/download.html) (must be available in your system's PATH)
+
+2.  **Clone the repository:**
+    ```bash
+    git clone https://gitlab.com/your-username/your-project.git
+    cd your-project
