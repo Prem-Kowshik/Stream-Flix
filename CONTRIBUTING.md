@@ -23,3 +23,4 @@ This document provides guidelines for contributing to this project.
     ```bash
     git clone https://gitlab.com/your-username/your-project.git
     cd your-project
+    ```
