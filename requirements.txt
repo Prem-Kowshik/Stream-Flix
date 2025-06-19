@@ -1,5 +1,6 @@
 torch
 pandas==2.3.0
+setuptools==66.1.1
 requests==2.32.4
 openai-whisper
 streamlit==1.45.1
