@@ -20,11 +20,13 @@ async def fetch_video_url_title():
     return urls,titles    
 def clean_response(response):
     response_text = response.text
-    respl=response_text.lstrip("```json")
-    respr=respl.rstrip("```")
+    respr=response_text.rstrip("```")
+    x=respr.find('json')
+    x+=4
+    resp=respr[x:len(respr)]
     print(respr)
     try:
-        json_data = json.loads(respr)
+        json_data = json.loads(resp)
         return json_data
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON: {e}")
