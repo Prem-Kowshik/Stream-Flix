@@ -12,7 +12,7 @@
 A Streamlit web application to browse, watch, and analyze public domain videos from Wikimedia Commons, enhanced with AI-powered features.
 
 ## ✨ Preview
-"C:\Users\jyoth\OneDrive\Desktop\PYTHON\Swasthya\streamflix.jpg"
+![alt text](<WhatsApp Image 2025-06-19 at 13.35.30_b0f7d986.jpg>)
 
 
 ## 🚀 Core Features
