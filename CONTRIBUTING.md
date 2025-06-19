@@ -10,3 +10,4 @@ This document provides guidelines for contributing to this project.
 - If you don't see an open issue addressing the problem, open a new one. Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample or an executable test case** demonstrating the expected behavior that is not occurring.
 
 ### Suggesting Enhancements
+- Open a new issue to suggest an enhancement. Please provide a clear description of the enhancement and why it would be useful.
