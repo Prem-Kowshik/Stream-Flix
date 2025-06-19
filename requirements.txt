@@ -1,8 +1,7 @@
 torch
 pandas==2.3.0
-setuptools==66.1.1
 requests==2.32.4
-openai-whisper
+git+https://github.com/openai/whisper.git
 streamlit==1.45.1
 aiohttp==3.12.2
 backoff==2.2.1
