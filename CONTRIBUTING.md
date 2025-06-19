@@ -11,3 +11,8 @@ This document provides guidelines for contributing to this project.
 
 ### Suggesting Enhancements
 - Open a new issue to suggest an enhancement. Please provide a clear description of the enhancement and why it would be useful.
+
+1.  **Prerequisites:**
+    - [Git](https://git-scm.com/)
+    - [Python 3.9+](https://www.python.org/)
+    - [FFmpeg](https://ffmpeg.org/download.html) (must be available in your system's PATH)
