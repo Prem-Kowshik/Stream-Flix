@@ -94,3 +94,7 @@ This document provides guidelines for contributing to this project.
     ```bash
     git commit -am "feat: Add a concise description of your feature"
     ```
+5.  Push your branch to GitLab:
+    ```bash
+    git push origin feature/your-amazing-feature
+    ```
