@@ -30,3 +30,7 @@
 30. Edited response_testing.py
 31. Added thumbnails to streamlit.frontend.py
 32. Added subtitles feature to 01_Video_Player.py
+33. Fixed genre_utils.py
+34. UI fixes in 01_Video_Player.py
+35.Updated requirements.txt 
+36.Updated contributions.md
