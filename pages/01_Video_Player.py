@@ -77,7 +77,7 @@ st.set_page_config(page_title="Video Player - Wikimedia Commons", page_icon="�
 if 'selected_video' not in st.session_state or not st.session_state.selected_video:
     st.error("No video selected. Please select a video from the browse page.")
     if st.button("Back to Browse"):
-        st.switch_page("streamlit_frontend.py")
+        st.switch_page("Homepage.py")
 else:
     video = st.session_state.selected_video
     movie_title = clean_title(video["canonicaltitle"])
@@ -162,7 +162,7 @@ else:
 
     with right_col:
         if st.button("← Back to Browse", type="primary"):
-            st.switch_page("streamlit_frontend.py")
+            st.switch_page("Homepage.py")
 
         st.markdown("### 📊 Video Metadata")
         st.markdown(f"""
