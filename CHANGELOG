@@ -1,22 +1,61 @@
-1. Added response_testing.py
-2. Edited response_testing.py
-3. Added test_api.py
-4. Added start_app.py
-5. Added streamlit_app.py
-6. Added requirements.txt
-7. Edited response_testing.py
-8. Added api.py
-9. Edited api.py
-10. Edited response_testing.py
-11. Edited api.py
-12. Edited api.py
-13. Edited api.py
-14. Added streamlit_frontend.py
-15. Edited streamlit_frontend.py
-16. Edited api.py
-17. Deleted start_app.py
-18. Deleted test_api.py
-19. Deleted streamlit_app.py
-20. Edited README.md
-21. Added CONTRIBUTING.md
-22. Added CHANGELOG.md
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Added
+- Your next planned feature here.
+
+---
+
+## [1.2.1] - 2024-06-18
+
+### Fixed
+- Corrected a bug in the genre classification utility (`genre_utils.py`).
+
+### Changed
+- Updated project dependencies in `requirements.txt`.
+- Improved contribution guidelines in `CONTRIBUTING.md`.
+
+## [1.2.0] - 2024-06-17
+
+### Added
+- **Playback Speed Controls:** Integrated a playback speed selector into the video player.
+- **Subtitle Generation:** Implemented a feature to generate English subtitles for videos using AI translation.
+- **Video Thumbnails:** Added video thumbnails to the main browsing page (`streamlit_frontend.py`) for a better visual experience.
+
+### Changed
+- **UI Overhaul:** Refined the user interface of the video player page for improved layout and aesthetics.
+
+## [1.1.0] - 2024-06-15
+
+### Added
+- **Genre Classification:** Introduced a new feature to classify movie genres based on their metadata.
+- Added a dedicated page for the new genre classification feature.
+
+### Changed
+- **AI Trope Analyzer:** Significantly enhanced the AI trope analyzer for more accurate and reliable results.
+
+## [1.0.0] - 2024-06-12
+
+### Added
+- **Multi-Page App Structure:** Converted the application into a multi-page Streamlit app with separate pages for browsing, video playback, and movie details.
+- **Project Documentation:** Created initial versions of `CHANGELOG.md`, `CONTRIBUTING.md`, and an updated `README.md`.
+
+### Changed
+- **Major Refactor:** Refactored the frontend from a single-file concept (`streamlit_app.py`) to a more robust, multi-page architecture.
+
+### Removed
+- **Obsolete Scripts:** Deleted legacy scripts (`start_app.py`, `test_api.py`, `streamlit_app.py`) that were replaced by the new architecture.
+
+## [0.1.0] - 2024-06-10
+
+### Added
+- **Initial Project Setup:** Created the initial project structure.
+- **Backend API:** Implemented a basic backend API using `api.py` to handle data logic.
+- **API Testing:** Added `response_testing.py` for validating API endpoints.
+- **First Frontend:** Developed the first version of a user-facing frontend (`streamlit_frontend.py`).
+- Established the initial list of project dependencies in `requirements.txt`.
