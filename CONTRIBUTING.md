@@ -4,3 +4,4 @@ First off, thank you for considering contributing! It's people like you that mak
 This document provides guidelines for contributing to this project.
 
 ## How Can I Contribute?
+### Reporting Bugs
