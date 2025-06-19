@@ -98,3 +98,4 @@ This document provides guidelines for contributing to this project.
     ```bash
     git push origin feature/your-amazing-feature
     ```
+6.  Open a **Merge Request** on GitLab. Provide a clear description of the changes and link any relevant issues
