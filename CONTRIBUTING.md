@@ -76,9 +76,11 @@ This document provides guidelines for contributing to this project.
     ```bash
     pip install -r requirements.txt
     ```
+
 ## Your First Code Contribution
 
 1.  Create a new branch for your changes:
     ```bash
     git checkout -b feature/your-amazing-feature
     ```
+2.  Make your changes to the code
