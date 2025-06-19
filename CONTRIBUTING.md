@@ -24,3 +24,13 @@ This document provides guidelines for contributing to this project.
     git clone https://gitlab.com/your-username/your-project.git
     cd your-project
     ```
+3.  **Create a virtual environment:**
+    ```bash
+    # For Windows
+    python -m venv venv
+    .\venv\Scripts\activate
+
+    # For macOS/Linux
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
