@@ -12,7 +12,7 @@
 A Streamlit web application to browse, watch, and analyze public domain videos from Wikimedia Commons, enhanced with AI-powered features.
 
 ## ✨ Preview
-![alt text](<WhatsApp Image 2025-06-19 at 13.35.30_b0f7d986.jpg>)
+![alt text](<WhatsApp Image 2025-06-19 at 14.24.45_1918f427.jpg>)
 
 
 ## 🚀 Core Features
